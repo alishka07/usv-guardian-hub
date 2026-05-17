@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Plus, Cpu } from "lucide-react";
 import { toast } from "sonner";
 import type { Robot } from "./types";
+import { ROBOT_COLORS } from "./mock-data";
 
 export function ConnectDeviceDialog({ onAdd }: { onAdd: (r: Robot) => void }) {
   const [open, setOpen] = useState(false);
@@ -22,7 +23,18 @@ export function ConnectDeviceDialog({ onAdd }: { onAdd: (r: Robot) => void }) {
       status: "online",
       battery: 100, signal: 88,
       position: { x: 40 + Math.random() * 30, y: 30 + Math.random() * 40 },
+      heading: 0,
+      speed: 0,
+      color: ROBOT_COLORS.cyan,
       samplesPerTrip: 10,
+      waypoints: [
+        { x: 30, y: 58 },
+        { x: 45, y: 50 },
+        { x: 60, y: 45 },
+      ],
+      waypointIdx: 1,
+      trail: [],
+      batteryHistory: Array.from({ length: 20 }, () => 100),
     });
     toast.success("Устройство подключено", { description: `${name} добавлен в систему` });
     setOpen(false);
