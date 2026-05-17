@@ -3,7 +3,7 @@ export type Robot = {
   name: string;
   model: string;
   serial: string;
-  status: "online" | "offline" | "rtl";
+  status: "online" | "offline" | "rtl" | "mission";
   battery: number;
   signal: number;
   position: { x: number; y: number };
@@ -27,4 +27,23 @@ export type Sample = {
   oxygen: number;
   turbidity: number;
   temperature: number;
+};
+
+export type EventSeverity = "success" | "danger" | "warning" | "critical";
+export type EventType =
+  | "connected"
+  | "disconnected"
+  | "low_battery"
+  | "rtl"
+  | "mission_start"
+  | "mission_done";
+
+export type EventLogEntry = {
+  id: string;
+  ts: number; // epoch ms
+  robotId: string;
+  robotName: string;
+  type: EventType;
+  severity: EventSeverity;
+  message: string;
 };
