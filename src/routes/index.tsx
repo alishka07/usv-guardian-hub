@@ -10,6 +10,7 @@ import { DevicesView } from "@/components/app/DevicesView";
 import { AnalyticsView } from "@/components/app/AnalyticsView";
 import { initialRobots, initialSamples, RESERVOIR } from "@/components/app/mock-data";
 import { useRealtimeSimulation } from "@/components/app/useRealtimeSimulation";
+import { useEventLog } from "@/components/app/useEventLog";
 import type { Robot, Sample } from "@/components/app/types";
 
 export const Route = createFileRoute("/")({
@@ -28,12 +29,16 @@ function App() {
   const [selectedRobot, setSelectedRobot] = useState<Robot | null>(null);
   const [selectedSample, setSelectedSample] = useState<Sample | null>(null);
   const [tab, setTab] = useState("map");
-  const [clock, setClock] = useState(() => new Date());
+  const [clock, setClock] = useState<Date | null>(null);
+  const [editMode, setEditMode] = useState(false);
+  const [draftWaypoints, setDraftWaypoints] = useState<{ x: number; y: number }[]>([]);
 
   useRealtimeSimulation(setRobots, true);
+  const { log } = useEventLog(robots);
 
   // local clock (UTC+5 Almaty mock — just show local)
   useEffect(() => {
+    setClock(new Date());
     const id = setInterval(() => setClock(new Date()), 1000);
     return () => clearInterval(id);
   }, []);
@@ -45,7 +50,7 @@ function App() {
     if (updated && updated !== selectedRobot) setSelectedRobot(updated);
   }, [robots, selectedRobot]);
 
-  const onlineCount = robots.filter((r) => r.status === "online").length;
+  const onlineCount = robots.filter((r) => r.status === "online" || r.status === "mission").length;
   const rtlCount = robots.filter((r) => r.status === "rtl").length;
 
   return (
@@ -82,7 +87,7 @@ function App() {
               <Radio className="size-3.5 text-success pulse-dot" /> LIVE
             </span>
             <span className="text-border">·</span>
-            <span className="font-mono tabular-nums">{clock.toLocaleTimeString("ru-RU")}</span>
+            <span className="font-mono tabular-nums min-w-[64px] inline-block">{clock ? clock.toLocaleTimeString("ru-RU") : "—"}</span>
             <span className="text-muted-foreground text-[10px]">Алматы UTC+5</span>
           </div>
 
@@ -120,22 +125,30 @@ function App() {
                 onSelectRobot={setSelectedRobot}
                 onSelectSample={setSelectedSample}
                 selectedRobotId={selectedRobot?.id}
+                editMode={editMode && !!selectedRobot}
+                editingRobotId={selectedRobot?.id}
+                draftWaypoints={draftWaypoints}
+                onMapClick={(x, y) => setDraftWaypoints((wps) => [...wps, { x, y }])}
               />
               {selectedRobot && (
                 <RobotPanel
                   robot={selectedRobot}
-                  onClose={() => setSelectedRobot(null)}
+                  onClose={() => { setSelectedRobot(null); setEditMode(false); }}
                   onUpdate={(r) => {
                     setRobots((prev) => prev.map((p) => (p.id === r.id ? r : p)));
                     setSelectedRobot(r);
                   }}
+                  editMode={editMode}
+                  setEditMode={setEditMode}
+                  draftWaypoints={draftWaypoints}
+                  setDraftWaypoints={setDraftWaypoints}
                 />
               )}
             </div>
           </TabsContent>
 
           <TabsContent value="devices" className="mt-4">
-            <DevicesView robots={robots} />
+            <DevicesView robots={robots} log={log} />
           </TabsContent>
 
           <TabsContent value="analytics" className="mt-4">

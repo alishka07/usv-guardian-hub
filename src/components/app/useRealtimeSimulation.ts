@@ -52,13 +52,13 @@ export function useRealtimeSimulation(
           const trail = [...r.trail, { x: r.position.x, y: r.position.y }].slice(-TRAIL_MAX);
 
           // battery
-          const drain = r.status === "rtl" ? 0.05 : 0.15;
+          const drain = r.status === "rtl" ? 0.05 : r.status === "mission" ? 0.22 : 0.15;
           const battery = clamp(r.battery - drain + (Math.random() - 0.5) * 0.05, 0, 100);
 
           // signal flux
           const signal = clamp(r.signal + (Math.random() - 0.5) * 6, 35, 99);
 
-          // rare disconnect
+          // rare disconnect (only for free-roaming online units; missions are stable)
           let status: Robot["status"] = r.status;
           if (status === "online" && Math.random() < 0.008) {
             status = "offline";
