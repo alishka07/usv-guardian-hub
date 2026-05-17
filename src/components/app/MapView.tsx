@@ -277,7 +277,8 @@ export function MapView({ robots, samples, onSelectRobot, onSelectSample, select
           <Tooltip key={i}>
             <TooltipTrigger asChild>
               <button
-                onClick={() => c.type === "single" && onSelectSample(c.sample)}
+                onClick={(e) => { e.stopPropagation(); if (c.type === "single") onSelectSample(c.sample); }}
+                onPointerDown={(e) => e.stopPropagation()}
                 style={{ left: `${c.x}%`, top: `${c.y}%` }}
                 className="absolute -translate-x-1/2 -translate-y-1/2 group"
               >
