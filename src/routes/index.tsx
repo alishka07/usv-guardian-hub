@@ -29,6 +29,7 @@ function App() {
   const [samples] = useState<Sample[]>(initialSamples);
   const [selectedRobot, setSelectedRobot] = useState<Robot | null>(null);
   const [selectedSample, setSelectedSample] = useState<Sample | null>(null);
+  const [highlightedSampleId, setHighlightedSampleId] = useState<string | undefined>(undefined);
   const [tab, setTab] = useState("map");
   const [clock, setClock] = useState<Date | null>(null);
   const [editMode, setEditMode] = useState(false);
@@ -124,12 +125,13 @@ function App() {
                 robots={robots}
                 samples={samples}
                 onSelectRobot={setSelectedRobot}
-                onSelectSample={setSelectedSample}
+                onSelectSample={(s) => { setSelectedSample(s); setHighlightedSampleId(s.id); }}
                 selectedRobotId={selectedRobot?.id}
                 editMode={editMode && !!selectedRobot}
                 editingRobotId={selectedRobot?.id}
                 draftWaypoints={draftWaypoints}
                 onMapClick={(x, y) => setDraftWaypoints((wps) => [...wps, { x, y }])}
+                highlightedSampleId={highlightedSampleId}
               />
               {selectedRobot && (
                 <RobotPanel
@@ -151,7 +153,7 @@ function App() {
                   log={log}
                   samples={samples}
                   onClose={() => setSelectedRobot(null)}
-                  onSelectSample={setSelectedSample}
+                  onSelectSample={(s) => { setSelectedSample(s); setHighlightedSampleId(s.id); }}
                 />
               )}
             </div>
@@ -167,7 +169,7 @@ function App() {
         </Tabs>
       </main>
 
-      <SampleDialog sample={selectedSample} onClose={() => setSelectedSample(null)} />
+      <SampleDialog sample={selectedSample} onClose={() => { setSelectedSample(null); setHighlightedSampleId(undefined); }} />
     </div>
   );
 }
