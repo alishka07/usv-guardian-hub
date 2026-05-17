@@ -5,6 +5,7 @@ import { Map as MapIcon, Cpu, BarChart3, Waves, Activity, Clock, Radio } from "l
 import { ConnectDeviceDialog } from "@/components/app/ConnectDeviceDialog";
 import { MapView } from "@/components/app/MapView";
 import { RobotPanel } from "@/components/app/RobotPanel";
+import { RobotHistoryPanel } from "@/components/app/RobotHistoryPanel";
 import { SampleDialog } from "@/components/app/SampleDialog";
 import { DevicesView } from "@/components/app/DevicesView";
 import { AnalyticsView } from "@/components/app/AnalyticsView";
@@ -142,6 +143,15 @@ function App() {
                   setEditMode={setEditMode}
                   draftWaypoints={draftWaypoints}
                   setDraftWaypoints={setDraftWaypoints}
+                />
+              )}
+              {selectedRobot && (
+                <RobotHistoryPanel
+                  robot={selectedRobot}
+                  log={log}
+                  samples={samples}
+                  onClose={() => setSelectedRobot(null)}
+                  onSelectSample={setSelectedSample}
                 />
               )}
             </div>
