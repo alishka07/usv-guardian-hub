@@ -27,6 +27,8 @@ export type Sample = {
   oxygen: number;
   turbidity: number;
   temperature: number;
+  depth: number; // meters
+  pollution: number; // 0..100 index
 };
 
 export type EventSeverity = "success" | "danger" | "warning" | "critical";
