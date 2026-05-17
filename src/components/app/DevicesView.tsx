@@ -34,11 +34,11 @@ export function DevicesView({ robots }: { robots: Robot[] }) {
               </Badge>
             </div>
             <div className="space-y-1">
-              <div className="flex items-center gap-1 text-xs"><Battery className="size-3" />{r.battery}%</div>
+              <div className="flex items-center gap-1 text-xs tabular-nums"><Battery className="size-3" />{r.battery.toFixed(0)}%</div>
               <Progress value={r.battery} className="h-1" />
             </div>
             <div className="space-y-1">
-              <div className="flex items-center gap-1 text-xs"><Signal className="size-3" />{r.signal}%</div>
+              <div className="flex items-center gap-1 text-xs tabular-nums"><Signal className="size-3" />{r.signal.toFixed(0)}%</div>
               <Progress value={r.signal} className="h-1" />
             </div>
             <div className="text-sm font-mono">{r.samplesPerTrip} / выезд</div>
