@@ -3,12 +3,19 @@ export type Robot = {
   name: string;
   model: string;
   serial: string;
-  status: "online" | "offline";
+  status: "online" | "offline" | "rtl";
   battery: number;
   signal: number;
   position: { x: number; y: number };
+  heading: number; // degrees
+  speed: number; // m/s
+  color: string; // oklch token expression
   lastSeen?: string;
   samplesPerTrip: number;
+  waypoints: { x: number; y: number }[];
+  waypointIdx: number;
+  trail: { x: number; y: number }[];
+  batteryHistory: number[];
 };
 
 export type Sample = {
