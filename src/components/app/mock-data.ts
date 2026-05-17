@@ -88,16 +88,32 @@ export const initialRobots: Robot[] = [
 const seed = (i: number) => Math.sin(i * 9301 + 49297) * 233280;
 const rand = (i: number) => Math.abs(seed(i) - Math.floor(seed(i)));
 
-// Generate samples scattered along the reservoir corridor (roughly y between 38-62, x between 22-86).
+// Sample positions follow the reservoir's diagonal water corridor.
+// The lake polygon (in MapView) runs roughly SW (8,68) → NE (86,33).
+// We parametrize a centerline and add a narrow lateral jitter so all points stay inside the water.
+function pointOnLake(t: number, lateral: number) {
+  // centerline (matches the path in MapView roughly)
+  const cx = 14 + t * 70;                  // 14 → 84
+  const cy = 64 - t * 26 - Math.sin(t * Math.PI) * 2; // 64 → 38, slight bow
+  // perpendicular to centerline (approx): direction (70, -26) → normal (26, 70) normalized
+  const nLen = Math.hypot(26, 70);
+  const nx = 26 / nLen;
+  const ny = 70 / nLen;
+  // narrower at the ends, wider in the middle
+  const halfWidth = 2.2 + Math.sin(t * Math.PI) * 2.3;
+  const off = lateral * halfWidth;
+  return { x: +(cx + nx * off).toFixed(2), y: +(cy + ny * off).toFixed(2) };
+}
+
 export const initialSamples: Sample[] = Array.from({ length: 32 }, (_, i) => {
   const robotIdx = i % 3;
   const robot = initialRobots[robotIdx];
-  const x = 22 + rand(i + 1) * 64;
-  const y = 40 + rand(i + 7) * 20;
+  const t = rand(i + 1);
+  const lateral = (rand(i + 7) - 0.5) * 2; // -1..1
   return {
     id: `s${i + 1}`,
     robotId: robot.id,
-    position: { x, y },
+    position: pointOnLake(t, lateral),
     date: new Date(Date.now() - i * 3600_000 * 4).toISOString(),
     ph: +(6.5 + rand(i + 11) * 2).toFixed(2),
     oxygen: +(5 + rand(i + 13) * 6).toFixed(2),
