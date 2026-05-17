@@ -119,6 +119,8 @@ export const initialSamples: Sample[] = Array.from({ length: 32 }, (_, i) => {
     oxygen: +(5 + rand(i + 13) * 6).toFixed(2),
     turbidity: +(1 + rand(i + 17) * 9).toFixed(2),
     temperature: +(12 + rand(i + 19) * 14).toFixed(1),
+    depth: +(1.2 + rand(i + 23) * 18).toFixed(1),
+    pollution: +(8 + rand(i + 29) * 70).toFixed(0),
   };
 });
 

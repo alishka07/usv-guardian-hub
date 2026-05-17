@@ -15,6 +15,7 @@ type Props = {
   editingRobotId?: string;
   draftWaypoints?: { x: number; y: number }[];
   onMapClick?: (x: number, y: number) => void;
+  highlightedSampleId?: string;
 };
 
 // Stylised Kapshagay reservoir outline (oriented NE→SW), with a narrow Ili river inlet on the east.
@@ -33,7 +34,7 @@ const RESERVOIR_PATH = `
 `;
 const RIVER_PATH = `M 86,33 C 92,28 97,24 99,18`;
 
-export function MapView({ robots, samples, onSelectRobot, onSelectSample, selectedRobotId, editMode, editingRobotId, draftWaypoints, onMapClick }: Props) {
+export function MapView({ robots, samples, onSelectRobot, onSelectSample, selectedRobotId, editMode, editingRobotId, draftWaypoints, onMapClick, highlightedSampleId }: Props) {
   // continuous zoom (1..6) + pan offset in % of container size
   const [zoom, setZoom] = useState(1.4);
   const [pan, setPan] = useState({ x: 0, y: 0 });
@@ -290,7 +291,19 @@ export function MapView({ robots, samples, onSelectRobot, onSelectSample, select
                     <span className="text-[9px] text-cyan-accent/80 mt-0.5 font-medium">проб</span>
                   </div>
                 ) : (
-                  <div className="size-2.5 rounded-full bg-cyan-accent border border-background hover:size-4 transition-all cursor-pointer shadow-[0_0_8px_oklch(0.82_0.15_200/0.7)]" />
+                  <div className="relative">
+                    {highlightedSampleId === c.sample.id && (
+                      <>
+                        <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 size-8 rounded-full border-2 border-cyan-accent animate-ping" />
+                        <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 size-6 rounded-full border border-cyan-accent/70" />
+                      </>
+                    )}
+                    <div
+                      className={`relative rounded-full bg-cyan-accent border border-background transition-all cursor-pointer shadow-[0_0_8px_oklch(0.82_0.15_200/0.7)] ${
+                        highlightedSampleId === c.sample.id ? "size-5 ring-2 ring-cyan-accent/60 ring-offset-1 ring-offset-background" : "size-2.5 hover:size-4"
+                      }`}
+                    />
+                  </div>
                 )}
               </button>
             </TooltipTrigger>
