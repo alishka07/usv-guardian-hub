@@ -195,13 +195,26 @@ export function MapView({ robots, samples, onSelectRobot, onSelectSample, select
           <path d="M 26,62 C 42,58 60,52 82,44" fill="none" stroke="oklch(0.78 0.12 210 / 0.14)" strokeWidth="0.18" strokeDasharray="0.6 1" />
 
           {/* Trails */}
-          {showTrails && robots.map((r) => {
+          {showTrails && zoom >= 1.2 && robots.map((r) => {
             if (r.trail.length < 2) return null;
-            const pts = r.trail.map((p) => `${p.x},${p.y}`).join(" ");
+            // Decimate at low zoom so the SVG path stays light and visually clean.
+            const stride = zoom < 1.6 ? 4 : zoom < 2.4 ? 2 : 1;
+            // Limit total drawn points based on zoom (more detail when zoomed in)
+            const maxPts = zoom < 1.6 ? 8 : zoom < 2.4 ? 16 : 28;
+            const decimated: { x: number; y: number }[] = [];
+            for (let i = 0; i < r.trail.length; i += stride) decimated.push(r.trail[i]);
+            if (decimated[decimated.length - 1] !== r.trail[r.trail.length - 1]) {
+              decimated.push(r.trail[r.trail.length - 1]);
+            }
+            const trimmed = decimated.slice(-maxPts);
+            const pts = trimmed.map((p) => `${p.x},${p.y}`).join(" ");
+            // Stroke widths counter-scaled with zoom so they don't bloat on zoom-in
+            const w1 = +(1.6 / zoom).toFixed(2);
+            const w2 = +(0.45 / zoom).toFixed(2);
             return (
               <g key={`trail-g-${r.id}`}>
-                <polyline points={pts} fill="none" stroke={r.color} strokeOpacity={0.25} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                <polyline points={pts} fill="none" stroke={r.color} strokeWidth="0.5" strokeDasharray="0.4 1.2" strokeLinecap="round" />
+                <polyline points={pts} fill="none" stroke={r.color} strokeOpacity={0.22} strokeWidth={w1} strokeLinecap="round" strokeLinejoin="round" />
+                <polyline points={pts} fill="none" stroke={r.color} strokeWidth={w2} strokeDasharray="0.4 1.2" strokeLinecap="round" />
               </g>
             );
           })}
