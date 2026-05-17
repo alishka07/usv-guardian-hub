@@ -87,7 +87,7 @@ function App() {
               <Radio className="size-3.5 text-success pulse-dot" /> LIVE
             </span>
             <span className="text-border">·</span>
-            <span className="font-mono tabular-nums min-w-[64px] inline-block">{clock ? clock.toLocaleTimeString("ru-RU") : "—"}</span>
+            <span suppressHydrationWarning className="font-mono tabular-nums min-w-[64px] inline-block">{clock ? clock.toLocaleTimeString("ru-RU") : "—"}</span>
             <span className="text-muted-foreground text-[10px]">Алматы UTC+5</span>
           </div>
 
