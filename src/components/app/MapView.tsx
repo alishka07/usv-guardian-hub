@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState, useCallback, useEffect } from "react";
-import { Bot, ZoomIn, ZoomOut, Layers, Compass, Anchor, Building2, Waves, MapPin, Pencil, Trash2, RotateCcw } from "lucide-react";
+import { Bot, ZoomIn, ZoomOut, Layers, Compass, Anchor, Building2, Waves, MapPin, Pencil, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import type { Robot, Sample } from "./types";
