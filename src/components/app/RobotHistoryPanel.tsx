@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { X, History, Droplets, ScrollText, Bot, ChevronRight } from "lucide-react";
@@ -26,18 +26,27 @@ export function RobotHistoryPanel({
   samples,
   onClose,
   onSelectSample,
+  highlightedSampleId,
 }: {
   robot: Robot;
   log: EventLogEntry[];
   samples: Sample[];
   onClose: () => void;
   onSelectSample: (s: Sample) => void;
+  highlightedSampleId?: string;
 }) {
   const robotLog = useMemo(() => log.filter((e) => e.robotId === robot.id).slice(0, 20), [log, robot.id]);
   const robotSamples = useMemo(
     () => samples.filter((s) => s.robotId === robot.id).sort((a, b) => +new Date(b.date) - +new Date(a.date)),
     [samples, robot.id],
   );
+  const rowRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+
+  useEffect(() => {
+    if (!highlightedSampleId) return;
+    const el = rowRefs.current[highlightedSampleId];
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [highlightedSampleId]);
 
   return (
     <div className="absolute left-4 top-4 bottom-4 w-[320px] z-20 bg-card/95 backdrop-blur-xl border border-border rounded-xl shadow-2xl overflow-hidden flex flex-col animate-in slide-in-from-left-4 fade-in duration-300">
@@ -103,11 +112,17 @@ export function RobotHistoryPanel({
               {robotSamples.map((s) => {
                 const d = new Date(s.date);
                 const phWarn = s.ph < 6.5 || s.ph > 8.5;
+                const isActive = highlightedSampleId === s.id;
                 return (
                   <button
                     key={s.id}
+                    ref={(el) => { rowRefs.current[s.id] = el; }}
                     onClick={() => onSelectSample(s)}
-                    className="w-full text-left rounded-lg border border-border bg-card/60 hover:bg-panel/70 hover:border-primary/40 transition group px-3 py-2 flex items-center gap-3"
+                    className={`w-full text-left rounded-lg border transition group px-3 py-2 flex items-center gap-3 ${
+                      isActive
+                        ? "border-cyan-accent bg-cyan-accent/10 ring-2 ring-cyan-accent/40 shadow-lg shadow-cyan-accent/10"
+                        : "border-border bg-card/60 hover:bg-panel/70 hover:border-primary/40"
+                    }`}
                   >
                     <div className="size-8 rounded-md bg-cyan-accent/15 border border-cyan-accent/30 flex items-center justify-center flex-shrink-0">
                       <Droplets className="size-3.5 text-cyan-accent" />
