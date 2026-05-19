@@ -154,6 +154,7 @@ function App() {
                   samples={samples}
                   onClose={() => setSelectedRobot(null)}
                   onSelectSample={(s) => { setSelectedSample(s); setHighlightedSampleId(s.id); }}
+                  highlightedSampleId={highlightedSampleId}
                 />
               )}
             </div>
