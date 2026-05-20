@@ -20,22 +20,9 @@
 
 ```bash
 # установка зависимостей
-bun install
-
+npm install
 # dev-сервер (Vite + HMR)
-bun run dev
-
-# production-сборка
-bun run build
-
-# превью production-сборки
-bun run preview
-
-# линтер
-bun run lint
-
-# форматирование
-bun run format
+npm run dev
 ```
 
 После запуска `bun run dev` приложение доступно на `http://localhost:3000`
