@@ -23,7 +23,7 @@ npm install
 npm run dev
 ```
 
-После запуска `bun run dev` приложение доступно на `http://localhost:3000`
+После запуска `npm run dev` приложение доступно на `http://localhost:3000`
 
 ---
 ## Скриншоты
