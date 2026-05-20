@@ -164,4 +164,56 @@
     0% { transform: translateY(-100%); }
     100% { transform: translateY(100%); }
   }
+
+  /* Map water shimmer — slowly drifting light streaks */
+  .water-shimmer {
+    background:
+      linear-gradient(115deg,
+        transparent 0%,
+        oklch(0.92 0.06 200 / 0.0) 35%,
+        oklch(0.92 0.06 200 / 0.1) 47%,
+        oklch(0.95 0.07 200 / 0.18) 50%,
+        oklch(0.92 0.06 200 / 0.1) 53%,
+        oklch(0.92 0.06 200 / 0.0) 65%,
+        transparent 100%
+      );
+    background-size: 220% 220%;
+    animation: shimmer-drift 14s linear infinite;
+    mix-blend-mode: screen;
+    opacity: 0.55;
+  }
+  @keyframes shimmer-drift {
+    0%   { background-position: 0% 0%; }
+    100% { background-position: 200% 200%; }
+  }
+
+  /* Slowly-throbbing halo for selected/highlighted markers */
+  .marker-halo {
+    animation: marker-halo 2.6s ease-in-out infinite;
+  }
+  @keyframes marker-halo {
+    0%, 100% { opacity: 0.65; transform: translate(-50%, -50%) scale(1);   }
+    50%      { opacity: 0.15; transform: translate(-50%, -50%) scale(2.2); }
+  }
+
+  /* Sample dot soft pulse */
+  .sample-pulse {
+    animation: sample-pulse 3.6s ease-in-out infinite;
+  }
+  @keyframes sample-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 oklch(0.82 0.09 195 / 0.45); }
+    50%      { box-shadow: 0 0 0 5px oklch(0.82 0.09 195 / 0.0);  }
+  }
+
+  /* Soft inner-edge darkening — like a real lens vignette */
+  .map-vignette::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse 95% 80% at 50% 55%,
+        transparent 55%,
+        oklch(0.10 0.04 235 / 0.45) 100%);
+  }
 }

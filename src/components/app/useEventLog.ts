@@ -6,6 +6,7 @@ const SEV: Record<EventType, EventSeverity> = {
   disconnected: "danger",
   low_battery: "warning",
   rtl: "critical",
+  estop: "critical",
   mission_start: "success",
   mission_done: "success",
 };
@@ -15,6 +16,7 @@ const LABEL: Record<EventType, string> = {
   disconnected: "Потеря связи",
   low_battery: "Низкий заряд батареи",
   rtl: "Аварийный возврат на базу (RTL)",
+  estop: "АВАРИЙНАЯ ОСТАНОВКА (ESTOP)",
   mission_start: "Запуск миссии",
   mission_done: "Миссия завершена",
 };

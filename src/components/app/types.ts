@@ -37,8 +37,25 @@ export type EventType =
   | "disconnected"
   | "low_battery"
   | "rtl"
+  | "estop"
   | "mission_start"
   | "mission_done";
+
+export type Thresholds = {
+  ph: { min: number; max: number; warnMin: number; warnMax: number };
+  oxygen: { critical: number; warn: number };
+  turbidity: { warn: number; critical: number };
+  temperature: { warn: number };
+  pollution: { ok: number; warn: number; danger: number };
+};
+
+export const DEFAULT_THRESHOLDS: Thresholds = {
+  ph: { min: 6.5, max: 8.5, warnMin: 6.8, warnMax: 8.2 },
+  oxygen: { critical: 4, warn: 6 },
+  turbidity: { warn: 5, critical: 8 },
+  temperature: { warn: 24 },
+  pollution: { ok: 20, warn: 45, danger: 70 },
+};
 
 export type EventLogEntry = {
   id: string;

@@ -1,4 +1,4 @@
-import { Map as MapIcon, Cpu, BarChart3, Waves, Activity, Radio } from "lucide-react";
+import { Map as MapIcon, Cpu, BarChart3, Waves, Activity, Radio, Sliders } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -13,7 +13,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 
-type View = "map" | "devices" | "analytics";
+type View = "map" | "devices" | "analytics" | "settings";
 
 type Props = {
   view: View;
@@ -29,6 +29,7 @@ const items: { id: View; title: string; icon: typeof MapIcon; badge?: (p: Props)
   { id: "map", title: "Карта", icon: MapIcon, badge: (p) => p.sampleCount },
   { id: "devices", title: "Устройства", icon: Cpu, badge: (p) => p.totalCount },
   { id: "analytics", title: "Аналитика и отчёты", icon: BarChart3 },
+  { id: "settings", title: "Пороги качества", icon: Sliders },
 ];
 
 export function AppSidebar(props: Props) {

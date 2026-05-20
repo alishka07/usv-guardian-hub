@@ -1,55 +1,39 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Droplets, Wind, Eye, Thermometer, Camera, Calendar, MapPin, Ruler, Biohazard, ShieldCheck, ShieldAlert, ShieldX, CircleCheck } from "lucide-react";
-import type { Sample } from "./types";
+import type { Sample, Thresholds } from "./types";
+import { DEFAULT_THRESHOLDS } from "./types";
+import { assessQuality, pollutionLabel, type QualityTone } from "./thresholds";
 
-type Quality = { label: string; tone: "success" | "warning" | "danger" | "critical"; icon: typeof ShieldCheck; score: number };
+const ICON_FOR_SCORE = (score: number) => {
+  if (score >= 80) return ShieldCheck;
+  if (score >= 60) return CircleCheck;
+  if (score >= 40) return ShieldAlert;
+  return ShieldX;
+};
 
-function assessQuality(s: Sample): Quality {
-  let score = 100;
-  if (s.ph < 6.5 || s.ph > 8.5) score -= 25;
-  else if (s.ph < 6.8 || s.ph > 8.2) score -= 10;
-  if (s.oxygen < 4) score -= 30; else if (s.oxygen < 6) score -= 12;
-  if (s.turbidity > 8) score -= 25; else if (s.turbidity > 5) score -= 10;
-  if (s.temperature > 24) score -= 10;
-  score -= Math.max(0, s.pollution - 20) * 0.5;
-  score = Math.max(0, Math.min(100, Math.round(score)));
-  if (score >= 80) return { label: "Отлично", tone: "success", icon: ShieldCheck, score };
-  if (score >= 60) return { label: "Хорошо", tone: "success", icon: CircleCheck, score };
-  if (score >= 40) return { label: "Удовлетворительно", tone: "warning", icon: ShieldAlert, score };
-  if (score >= 20) return { label: "Плохо", tone: "danger", icon: ShieldX, score };
-  return { label: "Критическое", tone: "critical", icon: ShieldX, score };
-}
-
-const TONE: Record<Quality["tone"], { bg: string; text: string; border: string; bar: string }> = {
+const TONE: Record<QualityTone, { bg: string; text: string; border: string; bar: string }> = {
   success: { bg: "bg-success/15", text: "text-success", border: "border-success/30", bar: "bg-success" },
   warning: { bg: "bg-warning/15", text: "text-warning", border: "border-warning/30", bar: "bg-warning" },
   danger: { bg: "bg-destructive/15", text: "text-destructive", border: "border-destructive/30", bar: "bg-destructive" },
   critical: { bg: "bg-[oklch(0.55_0.22_300)]/15", text: "text-[oklch(0.78_0.18_300)]", border: "border-[oklch(0.55_0.22_300)]/40", bar: "bg-[oklch(0.7_0.2_300)]" },
 };
 
-function pollutionLabel(p: number) {
-  if (p < 20) return { label: "Низкий", tone: "success" as const };
-  if (p < 45) return { label: "Умеренный", tone: "warning" as const };
-  if (p < 70) return { label: "Высокий", tone: "danger" as const };
-  return { label: "Критический", tone: "critical" as const };
-}
-
-export function SampleDialog({ sample, onClose }: { sample: Sample | null; onClose: () => void }) {
+export function SampleDialog({ sample, onClose, thresholds = DEFAULT_THRESHOLDS }: { sample: Sample | null; onClose: () => void; thresholds?: Thresholds }) {
   if (!sample) return null;
   const d = new Date(sample.date);
-  const quality = assessQuality(sample);
-  const QIcon = quality.icon;
+  const quality = assessQuality(sample, thresholds);
+  const QIcon = ICON_FOR_SCORE(quality.score);
   const qTone = TONE[quality.tone];
-  const poll = pollutionLabel(sample.pollution);
+  const poll = pollutionLabel(sample.pollution, thresholds);
   const pTone = TONE[poll.tone];
   const lat = (43.88 + (sample.position.y - 50) * 0.0015).toFixed(5);
   const lon = (77.07 + (sample.position.x - 50) * 0.002).toFixed(5);
 
   const metrics = [
-    { icon: Droplets, label: "Уровень pH", value: sample.ph, unit: "", color: "text-cyan-accent", note: sample.ph >= 6.5 && sample.ph <= 8.5 ? "в норме" : "вне нормы" },
-    { icon: Wind, label: "Растворённый кислород", value: sample.oxygen, unit: "мг/л", color: "text-success", note: sample.oxygen >= 6 ? "в норме" : sample.oxygen >= 4 ? "понижен" : "критично" },
-    { icon: Eye, label: "Мутность", value: sample.turbidity, unit: "NTU", color: "text-warning", note: sample.turbidity <= 5 ? "в норме" : "повышена" },
-    { icon: Thermometer, label: "Температура", value: sample.temperature, unit: "°C", color: "text-primary", note: sample.temperature <= 24 ? "в норме" : "высокая" },
+    { icon: Droplets, label: "Уровень pH", value: sample.ph, unit: "", color: "text-cyan-accent", note: sample.ph >= thresholds.ph.min && sample.ph <= thresholds.ph.max ? "в норме" : "вне нормы" },
+    { icon: Wind, label: "Растворённый кислород", value: sample.oxygen, unit: "мг/л", color: "text-success", note: sample.oxygen >= thresholds.oxygen.warn ? "в норме" : sample.oxygen >= thresholds.oxygen.critical ? "понижен" : "критично" },
+    { icon: Eye, label: "Мутность", value: sample.turbidity, unit: "NTU", color: "text-warning", note: sample.turbidity <= thresholds.turbidity.warn ? "в норме" : "повышена" },
+    { icon: Thermometer, label: "Температура", value: sample.temperature, unit: "°C", color: "text-primary", note: sample.temperature <= thresholds.temperature.warn ? "в норме" : "высокая" },
   ];
   return (
     <Dialog open={!!sample} onOpenChange={(o) => !o && onClose()}>

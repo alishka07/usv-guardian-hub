@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Map as MapIcon, Cpu, BarChart3 } from "lucide-react";
+import { Map as MapIcon, Cpu, BarChart3, Sliders } from "lucide-react";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app/AppSidebar";
 import { ConnectDeviceDialog } from "@/components/app/ConnectDeviceDialog";
@@ -10,9 +10,11 @@ import { RobotHistoryPanel } from "@/components/app/RobotHistoryPanel";
 import { SampleDialog } from "@/components/app/SampleDialog";
 import { DevicesView } from "@/components/app/DevicesView";
 import { AnalyticsView } from "@/components/app/AnalyticsView";
+import { SettingsView } from "@/components/app/SettingsView";
 import { initialRobots, initialSamples, RESERVOIR } from "@/components/app/mock-data";
 import { useRealtimeSimulation } from "@/components/app/useRealtimeSimulation";
 import { useEventLog } from "@/components/app/useEventLog";
+import { useThresholds } from "@/components/app/thresholds";
 import type { Robot, Sample } from "@/components/app/types";
 
 export const Route = createFileRoute("/")({
@@ -31,13 +33,14 @@ function App() {
   const [selectedRobot, setSelectedRobot] = useState<Robot | null>(null);
   const [selectedSample, setSelectedSample] = useState<Sample | null>(null);
   const [highlightedSampleId, setHighlightedSampleId] = useState<string | undefined>(undefined);
-  const [view, setView] = useState<"map" | "devices" | "analytics">("map");
+  const [view, setView] = useState<"map" | "devices" | "analytics" | "settings">("map");
   const [clock, setClock] = useState<Date | null>(null);
   const [editMode, setEditMode] = useState(false);
   const [draftWaypoints, setDraftWaypoints] = useState<{ x: number; y: number }[]>([]);
+  const { thresholds, setThresholds, resetThresholds } = useThresholds();
 
   useRealtimeSimulation(setRobots, true);
-  const { log } = useEventLog(robots);
+  const { log, push: pushEvent } = useEventLog(robots);
 
   // local clock (UTC+5 Almaty mock — just show local)
   useEffect(() => {
@@ -61,6 +64,7 @@ function App() {
     map: { title: "Оперативная карта", subtitle: `${RESERVOIR.name} · реальное время`, icon: MapIcon },
     devices: { title: "Устройства", subtitle: `Парк USV · ${robots.length} аппаратов`, icon: Cpu },
     analytics: { title: "Аналитика и отчёты", subtitle: "Сводные показатели качества воды", icon: BarChart3 },
+    settings: { title: "Пороги качества воды", subtitle: "Настройка границ для индикатора качества и отчётов", icon: Sliders },
   };
   const meta = viewMeta[view];
   const HeaderIcon = meta.icon;
@@ -132,6 +136,7 @@ function App() {
                     setEditMode={setEditMode}
                     draftWaypoints={draftWaypoints}
                     setDraftWaypoints={setDraftWaypoints}
+                    logEvent={pushEvent}
                   />
                 )}
                 {selectedRobot && (
@@ -147,11 +152,23 @@ function App() {
               </div>
             )}
             {view === "devices" && <DevicesView robots={robots} log={log} />}
-            {view === "analytics" && <AnalyticsView robots={robots} />}
+            {view === "analytics" && <AnalyticsView robots={robots} samples={samples} thresholds={thresholds} />}
+            {view === "settings" && (
+              <SettingsView
+                thresholds={thresholds}
+                onChange={setThresholds}
+                onReset={resetThresholds}
+                samples={samples}
+              />
+            )}
           </main>
         </SidebarInset>
 
-        <SampleDialog sample={selectedSample} onClose={() => { setSelectedSample(null); setHighlightedSampleId(undefined); }} />
+        <SampleDialog
+          sample={selectedSample}
+          onClose={() => { setSelectedSample(null); setHighlightedSampleId(undefined); }}
+          thresholds={thresholds}
+        />
       </div>
     </SidebarProvider>
   );

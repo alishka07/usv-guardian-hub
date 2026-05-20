@@ -4,11 +4,22 @@ import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { X, Battery, Signal, MapPin, OctagonAlert, Home, Bot, Gauge, Navigation2, Target, Pencil, Trash2, Rocket, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
 import { ResponsiveContainer, AreaChart, Area } from "recharts";
-import type { Robot } from "./types";
+import type { Robot, EventType, EventLogEntry } from "./types";
 
 const fmtTs = () => {
   const d = new Date();
@@ -28,22 +39,31 @@ type Props = {
   setEditMode: (v: boolean) => void;
   draftWaypoints: { x: number; y: number }[];
   setDraftWaypoints: (wps: { x: number; y: number }[]) => void;
+  logEvent?: (robot: Robot, type: EventType, extra?: string) => EventLogEntry;
 };
 
-export function RobotPanel({ robot, onClose, onUpdate, editMode, setEditMode, draftWaypoints, setDraftWaypoints }: Props) {
+export function RobotPanel({ robot, onClose, onUpdate, editMode, setEditMode, draftWaypoints, setDraftWaypoints, logEvent }: Props) {
   const [launching, setLaunching] = useState(false);
+  const [estopOpen, setEstopOpen] = useState(false);
+  const [rtlOpen, setRtlOpen] = useState(false);
 
   const emergency = () => {
-    onUpdate({ ...robot, status: "offline", signal: 0, speed: 0, lastSeen: "только что" });
+    const updated: Robot = { ...robot, status: "offline", signal: 0, speed: 0, lastSeen: "только что" };
+    onUpdate(updated);
+    logEvent?.(updated, "estop", "оператор · ручное подтверждение");
     toast.error("Аварийная остановка выполнена", {
-      description: `[${fmtTs()}] CMD: ESTOP → ${robot.name} · ACK`,
+      description: `[${fmtTs()}] CMD: ESTOP → ${robot.name} · ACK · запись в журнал`,
     });
+    setEstopOpen(false);
   };
   const rtl = () => {
-    onUpdate({ ...robot, status: "rtl" });
+    const updated: Robot = { ...robot, status: "rtl" };
+    onUpdate(updated);
+    logEvent?.(updated, "rtl", "ручная команда оператора");
     toast.warning("Возврат на базу инициирован", {
-      description: `[${fmtTs()}] CMD: RTL → ${robot.name} · следует на базу`,
+      description: `[${fmtTs()}] CMD: RTL → ${robot.name} · следует на базу · запись в журнал`,
     });
+    setRtlOpen(false);
   };
 
   const clearDraft = () => setDraftWaypoints([]);
@@ -203,12 +223,56 @@ export function RobotPanel({ robot, onClose, onUpdate, editMode, setEditMode, dr
         </div>
 
         <div className="pt-1 space-y-2">
-          <Button onClick={emergency} disabled={robot.status === "offline"} className="w-full h-16 text-base font-extrabold bg-destructive hover:bg-destructive/90 text-destructive-foreground glow-danger uppercase tracking-wide">
-            <OctagonAlert className="size-6" /> Аварийная остановка
-          </Button>
-          <Button onClick={rtl} disabled={robot.status === "offline"} className="w-full h-12 font-bold bg-warning hover:bg-warning/90 text-warning-foreground uppercase tracking-wide">
-            <Home className="size-5" /> Вернуть на базу (RTL)
-          </Button>
+          <AlertDialog open={estopOpen} onOpenChange={setEstopOpen}>
+            <AlertDialogTrigger asChild>
+              <Button disabled={robot.status === "offline"} className="w-full h-16 text-base font-extrabold bg-destructive hover:bg-destructive/90 text-destructive-foreground glow-danger uppercase tracking-wide">
+                <OctagonAlert className="size-6" /> Аварийная остановка
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent className="bg-card border-destructive/50">
+              <AlertDialogHeader>
+                <AlertDialogTitle className="flex items-center gap-2 text-destructive">
+                  <OctagonAlert className="size-5" /> Подтвердите аварийную остановку
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  Аппарат <span className="font-mono font-semibold text-foreground">{robot.name}</span> ({robot.serial}) будет немедленно
+                  переведён в состояние <span className="text-destructive font-semibold">OFFLINE</span>: двигатели заглушены,
+                  телеметрия прерывается, текущая миссия отменяется. Событие будет записано в журнал робота.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Отмена</AlertDialogCancel>
+                <AlertDialogAction onClick={emergency} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                  Да, остановить
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+
+          <AlertDialog open={rtlOpen} onOpenChange={setRtlOpen}>
+            <AlertDialogTrigger asChild>
+              <Button disabled={robot.status === "offline"} className="w-full h-12 font-bold bg-warning hover:bg-warning/90 text-warning-foreground uppercase tracking-wide">
+                <Home className="size-5" /> Вернуть на базу (RTL)
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent className="bg-card border-warning/50">
+              <AlertDialogHeader>
+                <AlertDialogTitle className="flex items-center gap-2 text-warning">
+                  <Home className="size-5" /> Подтвердите возврат на базу
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  Аппарат <span className="font-mono font-semibold text-foreground">{robot.name}</span> прервёт текущую миссию и
+                  направится к точке базы по кратчайшему безопасному маршруту. Событие будет записано в журнал робота.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Отмена</AlertDialogCancel>
+                <AlertDialogAction onClick={rtl} className="bg-warning text-warning-foreground hover:bg-warning/90">
+                  Подтвердить RTL
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </div>
     </div>
