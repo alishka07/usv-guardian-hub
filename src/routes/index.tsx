@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Map as MapIcon, Cpu, BarChart3, Waves } from "lucide-react";
+import { Map as MapIcon, Cpu, BarChart3 } from "lucide-react";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app/AppSidebar";
 import { ConnectDeviceDialog } from "@/components/app/ConnectDeviceDialog";
