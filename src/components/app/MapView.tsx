@@ -44,23 +44,20 @@ type Props = {
   thresholds: Thresholds;
 };
 
-// Kapshagay reservoir — elongated W→E lens, narrow at the dam and at the Ili mouth, wider in the middle.
+// Kapshagay reservoir — broad W→E lens, narrow at the dam and the Ili mouth, wide in the middle.
 const RESERVOIR_PATH = `
-  M 10,64
-  C 8,62 9,59 13,58
-  C 18,57 24,56 30,55
-  C 38,53 46,51 54,49
-  C 62,47 70,44 78,41
-  C 84,38 88,36 91,35
-  C 93,34 94,36 92,38
-  C 89,40 84,42 78,44
-  C 70,47 62,49 54,51
-  C 46,53 38,55 30,57
-  C 24,59 18,61 14,63
-  C 12,64 11,65 10,64 Z
+  M 6,64
+  C 5,61 8,57 15,55
+  C 26,50 38,45 52,41
+  C 65,37 78,34 90,33
+  C 94,32.6 96,34 95,37
+  C 93,40 88,42 82,44
+  C 68,49 54,53 43,57
+  C 31,61 20,64 13,66
+  C 9,67 7,66 6,64 Z
 `;
-const RIVER_PATH = `M 91,35 C 95,32 97,28 99,22`;
-const TRIB_PATH = `M 64,49 C 66,53 67,57 65,62`;
+const RIVER_PATH = `M 94,34 C 97,30 98,25 99,19`;
+const TRIB_PATH = `M 62,50 C 64,55 65,59 63,64`;
 
 export function MapView({
   robots,
@@ -302,21 +299,21 @@ export function MapView({
             {/* Depth contour lines (suggest bathymetry) */}
             <g clipPath="url(#water-clip)" opacity="0.65">
               <path
-                d="M 18,60 C 36,56 56,49 80,40"
+                d="M 18,58 C 36,53 58,46 86,37"
                 fill="none"
                 stroke="oklch(0.88 0.09 200 / 0.35)"
                 strokeWidth="0.18"
                 strokeDasharray="0.9 0.9"
               />
               <path
-                d="M 22,62 C 42,58 60,52 82,44"
+                d="M 20,61 C 40,56 60,49 86,40"
                 fill="none"
                 stroke="oklch(0.88 0.09 200 / 0.25)"
                 strokeWidth="0.16"
                 strokeDasharray="0.6 1.1"
               />
               <path
-                d="M 28,60 C 44,56 60,50 78,43"
+                d="M 24,63 C 44,58 62,52 84,43"
                 fill="none"
                 stroke="oklch(0.88 0.09 200 / 0.18)"
                 strokeWidth="0.14"
@@ -347,7 +344,7 @@ export function MapView({
             )}
 
             {/* Bay highlight */}
-            <ellipse cx="50" cy="47" rx="14" ry="3.4" fill="oklch(0.95 0.07 200 / 0.18)" />
+            <ellipse cx="52" cy="47" rx="17" ry="4.5" fill="oklch(0.95 0.07 200 / 0.18)" />
 
             {/* Glowing shoreline (double stroke) */}
             <path

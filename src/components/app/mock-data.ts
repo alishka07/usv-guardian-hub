@@ -51,10 +51,10 @@ export const initialRobots: Robot[] = [
     lastSeen: "2 часа назад",
     samplesPerTrip: 8,
     waypoints: [
-      { x: 70, y: 42 },
-      { x: 76, y: 38 },
-      { x: 82, y: 34 },
-      { x: 76, y: 40 },
+      { x: 70, y: 43 },
+      { x: 78, y: 40 },
+      { x: 84, y: 37 },
+      { x: 76, y: 44 },
     ],
     waypointIdx: 0,
     trail: [],
@@ -93,15 +93,15 @@ const rand = (i: number) => Math.abs(seed(i) - Math.floor(seed(i)));
 // The lake polygon (in MapView) runs roughly SW (8,68) → NE (86,33).
 // We parametrize a centerline and add a narrow lateral jitter so all points stay inside the water.
 function pointOnLake(t: number, lateral: number) {
-  // centerline (matches the path in MapView roughly)
+  // centerline (matches the broadened reservoir path in MapView)
   const cx = 14 + t * 70; // 14 → 84
-  const cy = 64 - t * 26 - Math.sin(t * Math.PI) * 2; // 64 → 38, slight bow
-  // perpendicular to centerline (approx): direction (70, -26) → normal (26, 70) normalized
-  const nLen = Math.hypot(26, 70);
-  const nx = 26 / nLen;
+  const cy = 60 - t * 21 - Math.sin(t * Math.PI) * 2; // 60 → 39, slight bow
+  // perpendicular to centerline (approx): direction (70, -21) → normal (21, 70) normalized
+  const nLen = Math.hypot(21, 70);
+  const nx = 21 / nLen;
   const ny = 70 / nLen;
-  // narrower at the ends, wider in the middle
-  const halfWidth = 2.2 + Math.sin(t * Math.PI) * 2.3;
+  // narrower at the ends, wider in the middle — fills the broad central basin
+  const halfWidth = 2.5 + Math.sin(t * Math.PI) * 3.2;
   const off = lateral * halfWidth;
   return { x: +(cx + nx * off).toFixed(2), y: +(cy + ny * off).toFixed(2) };
 }
