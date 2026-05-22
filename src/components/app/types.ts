@@ -16,6 +16,8 @@ export type Robot = {
   waypointIdx: number;
   trail: { x: number; y: number }[];
   batteryHistory: number[];
+  manual?: boolean; // true while the operator is driving the unit by hand
+  beacon?: boolean; // signal beacon / projector light is on
 };
 
 export type Sample = {
@@ -29,6 +31,7 @@ export type Sample = {
   temperature: number;
   depth: number; // meters
   pollution: number; // 0..100 index
+  microplastic: number; // microparticle concentration, particles per m³
 };
 
 export type EventSeverity = "success" | "danger" | "warning" | "critical";

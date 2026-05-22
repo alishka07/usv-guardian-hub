@@ -1,5 +1,13 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,7 +16,15 @@ import { toast } from "sonner";
 import type { Robot } from "./types";
 import { ROBOT_COLORS } from "./mock-data";
 
-export function ConnectDeviceDialog({ onAdd }: { onAdd: (r: Robot) => void }) {
+const COLOR_CYCLE = Object.values(ROBOT_COLORS);
+
+export function ConnectDeviceDialog({
+  onAdd,
+  count = 0,
+}: {
+  onAdd: (r: Robot) => void;
+  count?: number;
+}) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [model, setModel] = useState("");
@@ -19,13 +35,16 @@ export function ConnectDeviceDialog({ onAdd }: { onAdd: (r: Robot) => void }) {
     if (!name || !model || !serial) return;
     onAdd({
       id: `r${Date.now()}`,
-      name, model, serial,
+      name,
+      model,
+      serial,
       status: "online",
-      battery: 100, signal: 88,
+      battery: 100,
+      signal: 88,
       position: { x: 40 + Math.random() * 30, y: 30 + Math.random() * 40 },
       heading: 0,
       speed: 0,
-      color: ROBOT_COLORS.cyan,
+      color: COLOR_CYCLE[count % COLOR_CYCLE.length],
       samplesPerTrip: 10,
       waypoints: [
         { x: 30, y: 58 },
@@ -38,13 +57,18 @@ export function ConnectDeviceDialog({ onAdd }: { onAdd: (r: Robot) => void }) {
     });
     toast.success("Устройство подключено", { description: `${name} добавлен в систему` });
     setOpen(false);
-    setName(""); setModel(""); setSerial("");
+    setName("");
+    setModel("");
+    setSerial("");
   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 glow-primary font-semibold">
+        <Button
+          size="lg"
+          className="bg-primary text-primary-foreground hover:bg-primary/90 glow-primary font-semibold"
+        >
           <Plus className="size-4" /> Подключить устройство
         </Button>
       </DialogTrigger>
@@ -53,24 +77,48 @@ export function ConnectDeviceDialog({ onAdd }: { onAdd: (r: Robot) => void }) {
           <DialogTitle className="flex items-center gap-2 text-xl">
             <Cpu className="size-5 text-primary" /> Подключение нового USV
           </DialogTitle>
-          <DialogDescription>Введите данные робота для регистрации в системе мониторинга.</DialogDescription>
+          <DialogDescription>
+            Введите данные робота для регистрации в системе мониторинга.
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={submit} className="space-y-4 pt-2">
           <div className="space-y-2">
             <Label htmlFor="name">Имя робота</Label>
-            <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="AquaBot-04" />
+            <Input
+              id="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="AquaBot-04"
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="model">Модель</Label>
-            <Input id="model" value={model} onChange={(e) => setModel(e.target.value)} placeholder="AB-X300" />
+            <Input
+              id="model"
+              value={model}
+              onChange={(e) => setModel(e.target.value)}
+              placeholder="AB-X300"
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="serial">Серийный номер</Label>
-            <Input id="serial" value={serial} onChange={(e) => setSerial(e.target.value)} placeholder="SN-0004-XX" />
+            <Input
+              id="serial"
+              value={serial}
+              onChange={(e) => setSerial(e.target.value)}
+              placeholder="SN-0004-XX"
+            />
           </div>
           <DialogFooter>
-            <Button type="button" variant="ghost" onClick={() => setOpen(false)}>Отмена</Button>
-            <Button type="submit" className="bg-primary text-primary-foreground hover:bg-primary/90">Подключить</Button>
+            <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
+              Отмена
+            </Button>
+            <Button
+              type="submit"
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              Подключить
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

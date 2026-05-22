@@ -1,4 +1,5 @@
 import type { Robot, Sample } from "./types";
+import { microplasticAt } from "./microplastic";
 
 // Coordinates roughly trace the Kapshagay reservoir shape in %.
 // Waypoints are picked inside the water polygon.
@@ -93,7 +94,7 @@ const rand = (i: number) => Math.abs(seed(i) - Math.floor(seed(i)));
 // We parametrize a centerline and add a narrow lateral jitter so all points stay inside the water.
 function pointOnLake(t: number, lateral: number) {
   // centerline (matches the path in MapView roughly)
-  const cx = 14 + t * 70;                  // 14 → 84
+  const cx = 14 + t * 70; // 14 → 84
   const cy = 64 - t * 26 - Math.sin(t * Math.PI) * 2; // 64 → 38, slight bow
   // perpendicular to centerline (approx): direction (70, -26) → normal (26, 70) normalized
   const nLen = Math.hypot(26, 70);
@@ -110,10 +111,11 @@ export const initialSamples: Sample[] = Array.from({ length: 32 }, (_, i) => {
   const robot = initialRobots[robotIdx];
   const t = rand(i + 1);
   const lateral = (rand(i + 7) - 0.5) * 2; // -1..1
+  const position = pointOnLake(t, lateral);
   return {
     id: `s${i + 1}`,
     robotId: robot.id,
-    position: pointOnLake(t, lateral),
+    position,
     date: new Date(Date.now() - i * 3600_000 * 4).toISOString(),
     ph: +(6.5 + rand(i + 11) * 2).toFixed(2),
     oxygen: +(5 + rand(i + 13) * 6).toFixed(2),
@@ -121,6 +123,7 @@ export const initialSamples: Sample[] = Array.from({ length: 32 }, (_, i) => {
     temperature: +(12 + rand(i + 19) * 14).toFixed(1),
     depth: +(1.2 + rand(i + 23) * 18).toFixed(1),
     pollution: +(8 + rand(i + 29) * 70).toFixed(0),
+    microplastic: microplasticAt(position, (rand(i + 31) - 0.5) * 0.3),
   };
 });
 
@@ -138,6 +141,9 @@ export const RESERVOIR = {
   lat: "43.8800° N",
   lon: "77.0700° E",
 };
+
+// Home dock for return-to-launch / recharge logic — matches the "base" landmark.
+export const BASE_POSITION = { x: 24, y: 60 };
 
 export const MAP_LANDMARKS = [
   { id: "dam", label: "Плотина ГЭС", x: 18, y: 62, kind: "infra" as const },

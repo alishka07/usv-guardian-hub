@@ -32,18 +32,20 @@ function seed(robots: Robot[]): EventLogEntry[] {
     { type: "rtl", offsetMin: 60, robotIdx: 2, extra: "сигнал < 40%" },
     { type: "mission_done", offsetMin: 18, robotIdx: 0 },
   ];
-  return seeds.map((s, i) => {
-    const r = robots[s.robotIdx] ?? robots[0];
-    return {
-      id: `seed-${i}`,
-      ts: now - s.offsetMin * 60_000,
-      robotId: r.id,
-      robotName: r.name,
-      type: s.type,
-      severity: SEV[s.type],
-      message: s.extra ? `${LABEL[s.type]} · ${s.extra}` : LABEL[s.type],
-    };
-  }).reverse();
+  return seeds
+    .map((s, i) => {
+      const r = robots[s.robotIdx] ?? robots[0];
+      return {
+        id: `seed-${i}`,
+        ts: now - s.offsetMin * 60_000,
+        robotId: r.id,
+        robotName: r.name,
+        type: s.type,
+        severity: SEV[s.type],
+        message: s.extra ? `${LABEL[s.type]} · ${s.extra}` : LABEL[s.type],
+      };
+    })
+    .reverse();
 }
 
 export function useEventLog(robots: Robot[]) {
@@ -62,7 +64,20 @@ export function useEventLog(robots: Robot[]) {
       severity: SEV[type],
       message: extra ? `${LABEL[type]} · ${extra}` : LABEL[type],
     };
-    setLog((l) => [entry, ...l].slice(0, 250));
+    setLog((l) => {
+      // drop duplicates: a manual command and the status-transition detector
+      // both log the same event — keep the first (richer) one within a 3s window.
+      const recent = l[0];
+      if (
+        recent &&
+        recent.robotId === robot.id &&
+        recent.type === type &&
+        entry.ts - recent.ts < 3000
+      ) {
+        return l;
+      }
+      return [entry, ...l].slice(0, 250);
+    });
     return entry;
   }, []);
 
@@ -77,9 +92,11 @@ export function useEventLog(robots: Robot[]) {
       // status transitions
       if (p.status !== r.status) {
         if (r.status === "offline") push(r, "disconnected");
-        else if (p.status === "offline" && (r.status === "online" || r.status === "mission")) push(r, "connected");
+        else if (p.status === "offline" && (r.status === "online" || r.status === "mission"))
+          push(r, "connected");
         if (r.status === "rtl" && p.status !== "rtl") push(r, "rtl");
-        if (r.status === "mission" && p.status !== "mission") push(r, "mission_start", `маршрут ${r.waypoints.length} точек`);
+        if (r.status === "mission" && p.status !== "mission")
+          push(r, "mission_start", `маршрут ${r.waypoints.length} точек`);
         if (p.status === "mission" && r.status !== "mission") push(r, "mission_done");
       }
       // low battery edge

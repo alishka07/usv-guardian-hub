@@ -1,5 +1,7 @@
 import type { Robot, Sample, Thresholds } from "./types";
 import { assessQuality, pollutionLabel } from "./thresholds";
+import { toGps } from "@/lib/geo";
+import { microplasticLabel } from "./microplastic";
 
 export type ReportRange = { from: string; to: string };
 export type ReportFilters = { range: ReportRange; robotId: string };
@@ -20,8 +22,12 @@ export function filterSamples(samples: Sample[], filters: ReportFilters): Sample
 
 export function summarize(samples: Sample[], thresholds: Thresholds) {
   const n = samples.length || 1;
-  const avg = (k: keyof Pick<Sample, "ph" | "oxygen" | "turbidity" | "temperature" | "depth" | "pollution">) =>
-    samples.reduce((a, s) => a + (s[k] as number), 0) / n;
+  const avg = (
+    k: keyof Pick<
+      Sample,
+      "ph" | "oxygen" | "turbidity" | "temperature" | "depth" | "pollution" | "microplastic"
+    >,
+  ) => samples.reduce((a, s) => a + (s[k] as number), 0) / n;
   const scores = samples.map((s) => assessQuality(s, thresholds).score);
   const tones = samples.map((s) => assessQuality(s, thresholds).tone);
   const avgScore = scores.reduce((a, b) => a + b, 0) / n;
@@ -39,6 +45,7 @@ export function summarize(samples: Sample[], thresholds: Thresholds) {
     temperature: +avg("temperature").toFixed(1),
     depth: +avg("depth").toFixed(1),
     pollution: +avg("pollution").toFixed(0),
+    microplastic: +avg("microplastic").toFixed(0),
     avgScore: +avgScore.toFixed(1),
     counts,
   };
@@ -65,16 +72,18 @@ export function buildCSV(samples: Sample[], robots: Robot[], thresholds: Thresho
     "temperature_c",
     "depth_m",
     "pollution_idx",
+    "microplastic_p_m3",
     "quality_score",
     "quality_label",
     "pollution_label",
+    "microplastic_label",
   ];
   const lines: string[] = [header.join(";")];
   for (const s of samples) {
     const q = assessQuality(s, thresholds);
     const p = pollutionLabel(s.pollution, thresholds);
-    const lat = (43.88 + (s.position.y - 50) * 0.0015).toFixed(5);
-    const lon = (77.07 + (s.position.x - 50) * 0.002).toFixed(5);
+    const m = microplasticLabel(s.microplastic);
+    const { lat, lon } = toGps(s.position);
     lines.push(
       [
         s.id,
@@ -89,10 +98,14 @@ export function buildCSV(samples: Sample[], robots: Robot[], thresholds: Thresho
         s.temperature,
         s.depth,
         s.pollution,
+        s.microplastic,
         q.score,
         q.label,
         p.label,
-      ].map(csvEscape).join(";"),
+        m.label,
+      ]
+        .map(csvEscape)
+        .join(";"),
     );
   }
   return lines.join("\n");
@@ -110,7 +123,12 @@ export function downloadBlob(filename: string, mime: string, content: BlobPart) 
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-export function downloadCSV(samples: Sample[], robots: Robot[], thresholds: Thresholds, filters: ReportFilters) {
+export function downloadCSV(
+  samples: Sample[],
+  robots: Robot[],
+  thresholds: Thresholds,
+  filters: ReportFilters,
+) {
   const csv = "﻿" + buildCSV(samples, robots, thresholds); // BOM for Excel Cyrillic
   const fn = `usv_report_${filters.range.from}_${filters.range.to}.csv`;
   downloadBlob(fn, "text/csv;charset=utf-8", csv);
@@ -118,7 +136,10 @@ export function downloadCSV(samples: Sample[], robots: Robot[], thresholds: Thre
 }
 
 function htmlEscape(s: string): string {
-  return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
+  return s.replace(
+    /[&<>"']/g,
+    (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!,
+  );
 }
 
 export function buildHtmlReport(
@@ -130,17 +151,19 @@ export function buildHtmlReport(
   const robotName = new Map(robots.map((r) => [r.id, r.name]));
   const sum = summarize(samples, thresholds);
   const generated = new Date().toLocaleString("ru-RU");
-  const robotFilterLabel = filters.robotId === "all"
-    ? "Все устройства"
-    : robotName.get(filters.robotId) ?? filters.robotId;
+  const robotFilterLabel =
+    filters.robotId === "all"
+      ? "Все устройства"
+      : (robotName.get(filters.robotId) ?? filters.robotId);
 
-  const rows = samples.map((s) => {
-    const q = assessQuality(s, thresholds);
-    const p = pollutionLabel(s.pollution, thresholds);
-    const lat = (43.88 + (s.position.y - 50) * 0.0015).toFixed(5);
-    const lon = (77.07 + (s.position.x - 50) * 0.002).toFixed(5);
-    const d = new Date(s.date);
-    return `<tr>
+  const rows = samples
+    .map((s) => {
+      const q = assessQuality(s, thresholds);
+      const p = pollutionLabel(s.pollution, thresholds);
+      const m = microplasticLabel(s.microplastic);
+      const { lat, lon } = toGps(s.position);
+      const d = new Date(s.date);
+      return `<tr>
       <td>${htmlEscape(s.id.toUpperCase())}</td>
       <td>${htmlEscape(robotName.get(s.robotId) ?? s.robotId)}</td>
       <td>${d.toLocaleString("ru-RU")}</td>
@@ -151,10 +174,12 @@ export function buildHtmlReport(
       <td class="num">${s.temperature}</td>
       <td class="num">${s.depth}</td>
       <td class="num">${s.pollution}</td>
+      <td class="num tone-${m.tone}">${s.microplastic}</td>
       <td class="tone-${q.tone}">${q.score} · ${htmlEscape(q.label)}</td>
       <td class="tone-${p.tone}">${htmlEscape(p.label)}</td>
     </tr>`;
-  }).join("");
+    })
+    .join("");
 
   return `<!doctype html>
 <html lang="ru">
@@ -205,6 +230,7 @@ export function buildHtmlReport(
     <div class="stat"><div class="l">Средняя температура</div><div class="v">${sum.temperature} °C</div><div class="s">норма ≤ ${thresholds.temperature.warn}</div></div>
     <div class="stat"><div class="l">Средняя глубина</div><div class="v">${sum.depth} м</div></div>
     <div class="stat"><div class="l">Средний индекс загрязнения</div><div class="v">${sum.pollution}/100</div></div>
+    <div class="stat"><div class="l">Микрочастицы (среднее)</div><div class="v">${sum.microplastic} <span style="font-size:11px">частиц/м³</span></div></div>
     <div class="stat"><div class="l">Средний индекс качества</div><div class="v">${sum.avgScore}/100</div></div>
     <div class="stat">
       <div class="l">Распределение</div>
@@ -222,9 +248,9 @@ export function buildHtmlReport(
     <thead><tr>
       <th>ID</th><th>Устройство</th><th>Дата/время</th><th>Координаты</th>
       <th>pH</th><th>O₂ мг/л</th><th>Мутн. NTU</th><th>T °C</th><th>Глубина м</th><th>Загр.</th>
-      <th>Качество</th><th>Уровень загр.</th>
+      <th>Микрочаст.</th><th>Качество</th><th>Уровень загр.</th>
     </tr></thead>
-    <tbody>${rows || `<tr><td colspan="12" style="text-align:center;color:#888;padding:20px">Нет данных в выбранном периоде</td></tr>`}</tbody>
+    <tbody>${rows || `<tr><td colspan="13" style="text-align:center;color:#888;padding:20px">Нет данных в выбранном периоде</td></tr>`}</tbody>
   </table>
 
   <div class="footer">
@@ -239,7 +265,12 @@ export function buildHtmlReport(
 </html>`;
 }
 
-export function downloadPDF(samples: Sample[], robots: Robot[], thresholds: Thresholds, filters: ReportFilters) {
+export function downloadPDF(
+  samples: Sample[],
+  robots: Robot[],
+  thresholds: Thresholds,
+  filters: ReportFilters,
+) {
   const html = buildHtmlReport(samples, robots, thresholds, filters);
   const win = window.open("", "_blank");
   if (!win) {
@@ -253,7 +284,15 @@ export function downloadPDF(samples: Sample[], robots: Robot[], thresholds: Thre
   win.document.close();
   // give the browser a moment to render before triggering print
   setTimeout(() => {
-    try { win.focus(); win.print(); } catch { /* ignore */ }
+    try {
+      win.focus();
+      win.print();
+    } catch {
+      /* ignore */
+    }
   }, 350);
-  return { mode: "print" as const, filename: `usv_report_${filters.range.from}_${filters.range.to}.pdf` };
+  return {
+    mode: "print" as const,
+    filename: `usv_report_${filters.range.from}_${filters.range.to}.pdf`,
+  };
 }

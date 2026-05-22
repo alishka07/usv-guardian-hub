@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Map as MapIcon, Cpu, BarChart3, Sliders } from "lucide-react";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app/AppSidebar";
@@ -15,21 +15,46 @@ import { initialRobots, initialSamples, RESERVOIR } from "@/components/app/mock-
 import { useRealtimeSimulation } from "@/components/app/useRealtimeSimulation";
 import { useEventLog } from "@/components/app/useEventLog";
 import { useThresholds } from "@/components/app/thresholds";
+import { microplasticAt } from "@/components/app/microplastic";
 import type { Robot, Sample } from "@/components/app/types";
+
+// Builds a fresh measurement at a robot's current position — used both by the
+// background collection loop and by the manual "взять пробу" command.
+function makeSample(robot: Robot, seq: number): Sample {
+  const rnd = (min: number, max: number, dp = 2) =>
+    +(min + Math.random() * (max - min)).toFixed(dp);
+  return {
+    id: `s-live-${seq}`,
+    robotId: robot.id,
+    position: { x: robot.position.x, y: robot.position.y },
+    date: new Date().toISOString(),
+    ph: rnd(6.4, 8.8),
+    oxygen: rnd(4, 11),
+    turbidity: rnd(0.8, 11),
+    temperature: rnd(11, 27, 1),
+    depth: rnd(1.5, 20, 1),
+    pollution: rnd(6, 82, 0),
+    microplastic: microplasticAt(robot.position, (Math.random() - 0.5) * 0.3),
+  };
+}
 
 export const Route = createFileRoute("/")({
   component: App,
   head: () => ({
     meta: [
       { title: "USV · Капшагай · Мониторинг качества воды" },
-      { name: "description", content: "Платформа управления автономными аппаратами USV на Капшагайском водохранилище: телеметрия в реальном времени, маршруты, отчёты." },
+      {
+        name: "description",
+        content:
+          "Платформа управления автономными аппаратами USV на Капшагайском водохранилище: телеметрия в реальном времени, маршруты, отчёты.",
+      },
     ],
   }),
 });
 
 function App() {
   const [robots, setRobots] = useState<Robot[]>(initialRobots);
-  const [samples] = useState<Sample[]>(initialSamples);
+  const [samples, setSamples] = useState<Sample[]>(initialSamples);
   const [selectedRobot, setSelectedRobot] = useState<Robot | null>(null);
   const [selectedSample, setSelectedSample] = useState<Sample | null>(null);
   const [highlightedSampleId, setHighlightedSampleId] = useState<string | undefined>(undefined);
@@ -41,6 +66,29 @@ function App() {
 
   useRealtimeSimulation(setRobots, true);
   const { log, push: pushEvent } = useEventLog(robots);
+
+  // live sample collection: active robots periodically log a new measurement
+  const robotsRef = useRef(robots);
+  robotsRef.current = robots;
+  const sampleSeq = useRef(0);
+
+  const collectSample = useCallback((robot: Robot): Sample => {
+    sampleSeq.current += 1;
+    const s = makeSample(robot, sampleSeq.current);
+    setSamples((prev) => [s, ...prev].slice(0, 220));
+    return s;
+  }, []);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      const active = robotsRef.current.filter(
+        (r) => r.status === "mission" || r.status === "online",
+      );
+      if (active.length === 0) return;
+      collectSample(active[Math.floor(Math.random() * active.length)]);
+    }, 9000);
+    return () => clearInterval(id);
+  }, [collectSample]);
 
   // local clock (UTC+5 Almaty mock — just show local)
   useEffect(() => {
@@ -61,10 +109,22 @@ function App() {
   const clockText = clock ? clock.toLocaleTimeString("ru-RU") : "—";
 
   const viewMeta: Record<typeof view, { title: string; subtitle: string; icon: typeof MapIcon }> = {
-    map: { title: "Оперативная карта", subtitle: `${RESERVOIR.name} · реальное время`, icon: MapIcon },
+    map: {
+      title: "Оперативная карта",
+      subtitle: `${RESERVOIR.name} · реальное время`,
+      icon: MapIcon,
+    },
     devices: { title: "Устройства", subtitle: `Парк USV · ${robots.length} аппаратов`, icon: Cpu },
-    analytics: { title: "Аналитика и отчёты", subtitle: "Сводные показатели качества воды", icon: BarChart3 },
-    settings: { title: "Пороги качества воды", subtitle: "Настройка границ для индикатора качества и отчётов", icon: Sliders },
+    analytics: {
+      title: "Аналитика и отчёты",
+      subtitle: "Сводные показатели качества воды",
+      icon: BarChart3,
+    },
+    settings: {
+      title: "Пороги качества воды",
+      subtitle: "Настройка границ для индикатора качества и отчётов",
+      icon: Sliders,
+    },
   };
   const meta = viewMeta[view];
   const HeaderIcon = meta.icon;
@@ -87,8 +147,10 @@ function App() {
             <div className="px-5 py-3.5 flex items-center gap-4">
               <SidebarTrigger className="text-foreground/70 hover:text-foreground hover:bg-accent/60" />
               <div className="hidden sm:flex items-center gap-3 min-w-0">
-                <div className="size-9 rounded-lg flex items-center justify-center shrink-0 glow-cyan"
-                     style={{ background: "var(--gradient-cyan)" }}>
+                <div
+                  className="size-9 rounded-lg flex items-center justify-center shrink-0 glow-cyan"
+                  style={{ background: "var(--gradient-cyan)" }}
+                >
                   <HeaderIcon className="size-4 text-primary-foreground" />
                 </div>
                 <div className="min-w-0">
@@ -100,11 +162,19 @@ function App() {
               </div>
               <div className="ml-auto flex items-center gap-2">
                 <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border/60 bg-card/40 backdrop-blur text-[11px] text-muted-foreground">
-                  <span suppressHydrationWarning className="font-mono tabular-nums text-cyan-accent/90">{clockText}</span>
+                  <span
+                    suppressHydrationWarning
+                    className="font-mono tabular-nums text-cyan-accent/90"
+                  >
+                    {clockText}
+                  </span>
                   <span className="text-border">·</span>
                   <span>UTC+5</span>
                 </div>
-                <ConnectDeviceDialog onAdd={(r) => setRobots((prev) => [...prev, r])} />
+                <ConnectDeviceDialog
+                  count={robots.length}
+                  onAdd={(r) => setRobots((prev) => [...prev, r])}
+                />
               </div>
             </div>
           </header>
@@ -116,18 +186,25 @@ function App() {
                   robots={robots}
                   samples={samples}
                   onSelectRobot={setSelectedRobot}
-                  onSelectSample={(s) => { setSelectedSample(s); setHighlightedSampleId(s.id); }}
+                  onSelectSample={(s) => {
+                    setSelectedSample(s);
+                    setHighlightedSampleId(s.id);
+                  }}
                   selectedRobotId={selectedRobot?.id}
                   editMode={editMode && !!selectedRobot}
                   editingRobotId={selectedRobot?.id}
                   draftWaypoints={draftWaypoints}
                   onMapClick={(x, y) => setDraftWaypoints((wps) => [...wps, { x, y }])}
                   highlightedSampleId={highlightedSampleId}
+                  thresholds={thresholds}
                 />
                 {selectedRobot && (
                   <RobotPanel
                     robot={selectedRobot}
-                    onClose={() => { setSelectedRobot(null); setEditMode(false); }}
+                    onClose={() => {
+                      setSelectedRobot(null);
+                      setEditMode(false);
+                    }}
                     onUpdate={(r) => {
                       setRobots((prev) => prev.map((p) => (p.id === r.id ? r : p)));
                       setSelectedRobot(r);
@@ -137,6 +214,7 @@ function App() {
                     draftWaypoints={draftWaypoints}
                     setDraftWaypoints={setDraftWaypoints}
                     logEvent={pushEvent}
+                    onCollectSample={collectSample}
                   />
                 )}
                 {selectedRobot && (
@@ -145,14 +223,29 @@ function App() {
                     log={log}
                     samples={samples}
                     onClose={() => setSelectedRobot(null)}
-                    onSelectSample={(s) => { setSelectedSample(s); setHighlightedSampleId(s.id); }}
+                    onSelectSample={(s) => {
+                      setSelectedSample(s);
+                      setHighlightedSampleId(s.id);
+                    }}
                     highlightedSampleId={highlightedSampleId}
+                    thresholds={thresholds}
                   />
                 )}
               </div>
             )}
-            {view === "devices" && <DevicesView robots={robots} log={log} />}
-            {view === "analytics" && <AnalyticsView robots={robots} samples={samples} thresholds={thresholds} />}
+            {view === "devices" && (
+              <DevicesView
+                robots={robots}
+                log={log}
+                onOpenRobot={(r) => {
+                  setView("map");
+                  setSelectedRobot(r);
+                }}
+              />
+            )}
+            {view === "analytics" && (
+              <AnalyticsView robots={robots} samples={samples} thresholds={thresholds} />
+            )}
             {view === "settings" && (
               <SettingsView
                 thresholds={thresholds}
@@ -166,7 +259,10 @@ function App() {
 
         <SampleDialog
           sample={selectedSample}
-          onClose={() => { setSelectedSample(null); setHighlightedSampleId(undefined); }}
+          onClose={() => {
+            setSelectedSample(null);
+            setHighlightedSampleId(undefined);
+          }}
           thresholds={thresholds}
         />
       </div>
