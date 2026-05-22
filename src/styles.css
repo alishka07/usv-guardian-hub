@@ -49,93 +49,198 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Brand layer — exposed as Tailwind utilities (bg-surface, text-text, bg-accent-blue …) */
+  --color-surface: var(--surface);
+  --color-text: var(--text);
+  --color-accent-blue: var(--accent-blue);
+
+  /* Primary (cobalt) ramp — hover / active states */
+  --color-primary-50: var(--primary-50);
+  --color-primary-100: var(--primary-100);
+  --color-primary-200: var(--primary-200);
+  --color-primary-300: var(--primary-300);
+  --color-primary-400: var(--primary-400);
+  --color-primary-500: var(--primary-500);
+  --color-primary-600: var(--primary-600);
+  --color-primary-700: var(--primary-700);
+  --color-primary-800: var(--primary-800);
+  --color-primary-900: var(--primary-900);
+
+  /* Secondary (teal) ramp — hover / active states */
+  --color-secondary-50: var(--secondary-50);
+  --color-secondary-100: var(--secondary-100);
+  --color-secondary-200: var(--secondary-200);
+  --color-secondary-300: var(--secondary-300);
+  --color-secondary-400: var(--secondary-400);
+  --color-secondary-500: var(--secondary-500);
+  --color-secondary-600: var(--secondary-600);
+  --color-secondary-700: var(--secondary-700);
+  --color-secondary-800: var(--secondary-800);
+  --color-secondary-900: var(--secondary-900);
 }
 
+/*
+ * ─────────────────────────────────────────────────────────────────────────
+ * Aqua Bright — single source of truth for the project palette.
+ * Light, vivid water-ecology theme.
+ *
+ *   primary      #1E47C0  cobalt      — structure: sidebar, primary actions
+ *   secondary    #29A98D  teal        — cards / secondary elements
+ *   accent       #74D426  lime        — CTA / active / highlighted states
+ *   accent-blue  #4A8FF0  cornflower  — icons, links, decorative accents
+ *   surface      #FFFFFF              — card surface
+ *   text         #0A1A3F  deep navy   — text instead of pure black
+ *
+ * WCAG AA: on lime and teal the foreground is deep navy (white fails contrast).
+ * The operational map keeps its own dark rendering (see MapView.tsx).
+ * ─────────────────────────────────────────────────────────────────────────
+ */
 :root {
   --radius: 0.75rem;
-  /* Ocean Deep — deep navy + teal */
-  --background: oklch(0.18 0.045 235);   /* #0c2340 */
-  --foreground: oklch(0.97 0.012 220);
-  --panel: oklch(0.24 0.055 230);
-  --card: oklch(0.235 0.05 232);
-  --card-foreground: oklch(0.97 0.012 220);
-  --popover: oklch(0.22 0.05 232);
-  --popover-foreground: oklch(0.97 0.012 220);
-  --primary: oklch(0.62 0.10 215);       /* #2d8a9e */
-  --primary-foreground: oklch(0.16 0.04 235);
-  --secondary: oklch(0.30 0.055 228);
-  --secondary-foreground: oklch(0.97 0.012 220);
-  --muted: oklch(0.27 0.045 230);
-  --muted-foreground: oklch(0.72 0.025 220);
-  --accent: oklch(0.34 0.07 215);
-  --accent-foreground: oklch(0.97 0.012 220);
-  --destructive: oklch(0.62 0.22 25);
-  --destructive-foreground: oklch(0.98 0.01 220);
-  --success: oklch(0.74 0.16 175);
-  --success-foreground: oklch(0.16 0.04 235);
-  --warning: oklch(0.8 0.16 78);
-  --warning-foreground: oklch(0.16 0.04 235);
-  --cyan-accent: oklch(0.82 0.09 195);   /* #5cbdb9 */
-  --border: oklch(0.34 0.05 225);
-  --input: oklch(0.30 0.05 230);
-  --ring: oklch(0.78 0.10 200);
-  --chart-1: oklch(0.62 0.10 215);
-  --chart-2: oklch(0.82 0.09 195);
-  --chart-3: oklch(0.74 0.16 175);
-  --chart-4: oklch(0.8 0.16 78);
-  --chart-5: oklch(0.7 0.18 305);
 
-  /* Sidebar tokens */
-  --sidebar: oklch(0.20 0.05 234);
-  --sidebar-foreground: oklch(0.95 0.012 220);
-  --sidebar-primary: oklch(0.62 0.10 215);
-  --sidebar-primary-foreground: oklch(0.16 0.04 235);
-  --sidebar-accent: oklch(0.30 0.06 220);
-  --sidebar-accent-foreground: oklch(0.97 0.012 220);
-  --sidebar-border: oklch(0.32 0.05 226);
-  --sidebar-ring: oklch(0.78 0.10 200);
+  /* ── brand colours ── */
+  --surface: #ffffff;
+  --text: #0a1a3f;
+  --accent-blue: #4a8ff0;
 
-  /* Ocean-deep extras */
-  --gradient-ocean: linear-gradient(135deg, oklch(0.18 0.045 235) 0%, oklch(0.24 0.07 220) 55%, oklch(0.32 0.09 200) 100%);
-  --gradient-depth: linear-gradient(180deg, oklch(0.26 0.06 225) 0%, oklch(0.18 0.045 235) 100%);
-  --gradient-cyan: linear-gradient(135deg, oklch(0.62 0.10 215), oklch(0.82 0.09 195));
-  --shadow-glow: 0 0 32px oklch(0.78 0.10 200 / 0.35);
-  --shadow-elev: 0 16px 48px -16px oklch(0.10 0.05 235 / 0.65), 0 4px 16px -8px oklch(0.10 0.05 235 / 0.5);
+  /* primary — cobalt ramp */
+  --primary-50: #eef2fc;
+  --primary-100: #d7e0f7;
+  --primary-200: #b0c2ee;
+  --primary-300: #859ee2;
+  --primary-400: #5470d1;
+  --primary-500: #1e47c0;
+  --primary-600: #1a3fac;
+  --primary-700: #16348c;
+  --primary-800: #122a6f;
+  --primary-900: #0e2052;
+
+  /* secondary — teal ramp */
+  --secondary-50: #e9f7f3;
+  --secondary-100: #c7ece3;
+  --secondary-200: #94d9c9;
+  --secondary-300: #5fc4ac;
+  --secondary-400: #3db397;
+  --secondary-500: #29a98d;
+  --secondary-600: #218e76;
+  --secondary-700: #1a7160;
+  --secondary-800: #155a4d;
+  --secondary-900: #11463c;
+
+  /* ── semantic tokens (consumed by every component) ── */
+  --background: #eef3fb; /* faint blue-grey so white cards lift off the page */
+  --foreground: #0a1a3f;
+  --panel: #f3f6fc;
+  --card: #ffffff;
+  --card-foreground: #0a1a3f;
+  --popover: #ffffff;
+  --popover-foreground: #0a1a3f;
+
+  --primary: var(--primary-500); /* cobalt */
+  --primary-foreground: #ffffff;
+  --secondary: var(--secondary-500); /* teal */
+  --secondary-foreground: #0a1a3f; /* navy — white on teal fails AA */
+
+  --muted: #e8edf6;
+  --muted-foreground: #56688c;
+
+  --accent: #74d426; /* lime — CTA / active highlight */
+  --accent-foreground: #0a1a3f; /* navy on lime — WCAG AA */
+
+  --destructive: #d32f2f;
+  --destructive-foreground: #ffffff;
+  --success: #0a7a4f; /* deep emerald — distinct from the lime accent */
+  --success-foreground: #ffffff;
+  --warning: #e8a317;
+  --warning-foreground: #0a1a3f;
+
+  --cyan-accent: var(--accent-blue); /* cornflower — icons / decorative */
+
+  --border: #d5deec;
+  --input: #d5deec;
+  --ring: #1e47c0;
+
+  --chart-1: #1e47c0; /* cobalt */
+  --chart-2: #29a98d; /* teal */
+  --chart-3: #74d426; /* lime */
+  --chart-4: #4a8ff0; /* cornflower */
+  --chart-5: #e8a317; /* amber */
+
+  /* Sidebar — cobalt structural block */
+  --sidebar: #1e47c0;
+  --sidebar-foreground: #eaf0fd;
+  --sidebar-primary: #74d426; /* active item — lime */
+  --sidebar-primary-foreground: #0a1a3f;
+  --sidebar-accent: #16348c; /* hover item — darker cobalt */
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #2a52c9;
+  --sidebar-ring: #74d426;
+
+  /* Aqua-bright extras */
+  --gradient-ocean: linear-gradient(135deg, #1e47c0 0%, #29a98d 100%);
+  --gradient-depth: linear-gradient(180deg, #ffffff 0%, #eef3fb 100%);
+  --gradient-cyan: linear-gradient(135deg, #1e47c0, #4a8ff0);
+  --shadow-glow: 0 0 32px rgba(74, 143, 240, 0.35);
+  --shadow-elev:
+    0 16px 48px -16px rgba(10, 26, 63, 0.2), 0 4px 16px -8px rgba(10, 26, 63, 0.12);
 }
 
 @layer base {
-  * { border-color: var(--color-border); }
-  html, body { font-family: var(--font-sans); }
-  h1, h2, h3, h4, .font-display { font-family: var(--font-display); letter-spacing: -0.01em; }
+  * {
+    border-color: var(--color-border);
+  }
+  html,
+  body {
+    font-family: var(--font-sans);
+  }
+  h1,
+  h2,
+  h3,
+  h4,
+  .font-display {
+    font-family: var(--font-display);
+    letter-spacing: -0.01em;
+  }
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
     background-image:
-      radial-gradient(ellipse 60% 50% at 12% 0%, oklch(0.34 0.10 215 / 0.55), transparent 60%),
-      radial-gradient(ellipse 55% 45% at 90% 100%, oklch(0.40 0.10 195 / 0.40), transparent 65%),
-      radial-gradient(ellipse 40% 30% at 80% 10%, oklch(0.30 0.08 240 / 0.35), transparent 70%);
+      radial-gradient(ellipse 60% 50% at 12% 0%, rgba(74, 143, 240, 0.12), transparent 60%),
+      radial-gradient(ellipse 55% 45% at 90% 100%, rgba(41, 169, 141, 0.12), transparent 65%),
+      radial-gradient(ellipse 40% 30% at 80% 10%, rgba(30, 71, 192, 0.08), transparent 70%);
     background-attachment: fixed;
     min-height: 100vh;
   }
 }
 
 @layer utilities {
-  .font-display { font-family: var(--font-display); }
+  .font-display {
+    font-family: var(--font-display);
+  }
   .grid-bg {
     background-image:
       linear-gradient(oklch(0.82 0.09 195 / 0.06) 1px, transparent 1px),
       linear-gradient(90deg, oklch(0.82 0.09 195 / 0.06) 1px, transparent 1px);
     background-size: 44px 44px;
   }
-  .glow-primary { box-shadow: 0 0 28px oklch(0.62 0.10 215 / 0.5); }
-  .glow-cyan    { box-shadow: 0 0 28px oklch(0.82 0.09 195 / 0.45); }
-  .glow-success { box-shadow: 0 0 18px oklch(0.74 0.16 175 / 0.55); }
-  .glow-danger  { box-shadow: 0 0 30px oklch(0.62 0.22 25 / 0.5); }
+  .glow-primary {
+    box-shadow: 0 0 24px rgba(30, 71, 192, 0.32);
+  }
+  .glow-cyan {
+    box-shadow: 0 0 24px rgba(74, 143, 240, 0.32);
+  }
+  .glow-success {
+    box-shadow: 0 0 18px rgba(10, 122, 79, 0.4);
+  }
+  .glow-danger {
+    box-shadow: 0 0 28px rgba(211, 47, 47, 0.4);
+  }
   .glass-panel {
-    background: color-mix(in oklab, var(--card) 70%, transparent);
+    background: color-mix(in oklab, var(--card) 78%, transparent);
     backdrop-filter: blur(18px) saturate(140%);
     -webkit-backdrop-filter: blur(18px) saturate(140%);
-    border: 1px solid color-mix(in oklab, var(--cyan-accent) 18%, var(--border));
+    border: 1px solid color-mix(in oklab, var(--cyan-accent) 22%, var(--border));
     box-shadow: var(--shadow-elev);
   }
   .gradient-text {
@@ -144,47 +249,69 @@
     background-clip: text;
     color: transparent;
   }
-  .gradient-ocean { background: var(--gradient-ocean); }
+  .gradient-ocean {
+    background: var(--gradient-ocean);
+  }
   .hairline {
-    background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--cyan-accent) 50%, transparent), transparent);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      color-mix(in oklab, var(--cyan-accent) 50%, transparent),
+      transparent
+    );
     height: 1px;
   }
   .pulse-dot {
     animation: pulse-dot 2s ease-in-out infinite;
   }
   @keyframes pulse-dot {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.6; transform: scale(1.15); }
+    0%,
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.6;
+      transform: scale(1.15);
+    }
   }
   .scan-line {
     background: linear-gradient(180deg, transparent, oklch(0.82 0.09 195 / 0.13), transparent);
     animation: scan 4s linear infinite;
   }
   @keyframes scan {
-    0% { transform: translateY(-100%); }
-    100% { transform: translateY(100%); }
+    0% {
+      transform: translateY(-100%);
+    }
+    100% {
+      transform: translateY(100%);
+    }
   }
 
   /* Map water shimmer — slowly drifting light streaks */
   .water-shimmer {
-    background:
-      linear-gradient(115deg,
-        transparent 0%,
-        oklch(0.92 0.06 200 / 0.0) 35%,
-        oklch(0.92 0.06 200 / 0.1) 47%,
-        oklch(0.95 0.07 200 / 0.18) 50%,
-        oklch(0.92 0.06 200 / 0.1) 53%,
-        oklch(0.92 0.06 200 / 0.0) 65%,
-        transparent 100%
-      );
+    background: linear-gradient(
+      115deg,
+      transparent 0%,
+      oklch(0.92 0.06 200 / 0) 35%,
+      oklch(0.92 0.06 200 / 0.1) 47%,
+      oklch(0.95 0.07 200 / 0.18) 50%,
+      oklch(0.92 0.06 200 / 0.1) 53%,
+      oklch(0.92 0.06 200 / 0) 65%,
+      transparent 100%
+    );
     background-size: 220% 220%;
     animation: shimmer-drift 14s linear infinite;
     mix-blend-mode: screen;
     opacity: 0.55;
   }
   @keyframes shimmer-drift {
-    0%   { background-position: 0% 0%; }
-    100% { background-position: 200% 200%; }
+    0% {
+      background-position: 0% 0%;
+    }
+    100% {
+      background-position: 200% 200%;
+    }
   }
 
   /* Slowly-throbbing halo for selected/highlighted markers */
@@ -192,8 +319,15 @@
     animation: marker-halo 2.6s ease-in-out infinite;
   }
   @keyframes marker-halo {
-    0%, 100% { opacity: 0.65; transform: translate(-50%, -50%) scale(1);   }
-    50%      { opacity: 0.15; transform: translate(-50%, -50%) scale(2.2); }
+    0%,
+    100% {
+      opacity: 0.65;
+      transform: translate(-50%, -50%) scale(1);
+    }
+    50% {
+      opacity: 0.15;
+      transform: translate(-50%, -50%) scale(2.2);
+    }
   }
 
   /* Sample dot soft pulse */
@@ -201,8 +335,13 @@
     animation: sample-pulse 3.6s ease-in-out infinite;
   }
   @keyframes sample-pulse {
-    0%, 100% { box-shadow: 0 0 0 0 oklch(0.82 0.09 195 / 0.45); }
-    50%      { box-shadow: 0 0 0 5px oklch(0.82 0.09 195 / 0.0);  }
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 oklch(0.82 0.09 195 / 0.45);
+    }
+    50% {
+      box-shadow: 0 0 0 5px oklch(0.82 0.09 195 / 0);
+    }
   }
 
   /* Soft inner-edge darkening — like a real lens vignette */
@@ -211,9 +350,10 @@
     position: absolute;
     inset: 0;
     pointer-events: none;
-    background:
-      radial-gradient(ellipse 95% 80% at 50% 55%,
-        transparent 55%,
-        oklch(0.10 0.04 235 / 0.45) 100%);
+    background: radial-gradient(
+      ellipse 95% 80% at 50% 55%,
+      transparent 55%,
+      oklch(0.1 0.04 235 / 0.45) 100%
+    );
   }
 }
