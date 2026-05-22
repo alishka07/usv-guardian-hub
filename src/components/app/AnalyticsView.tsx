@@ -325,21 +325,22 @@ export function AnalyticsView({ robots, samples, thresholds }: Props) {
             <AreaChart data={chartData}>
               <defs>
                 <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="oklch(0.82 0.15 200)" stopOpacity={0.6} />
-                  <stop offset="100%" stopColor="oklch(0.82 0.15 200)" stopOpacity={0} />
+                  <stop offset="0%" stopColor="#1E47C0" stopOpacity={0.55} />
+                  <stop offset="100%" stopColor="#1E47C0" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid stroke="oklch(0.32 0.04 250)" strokeDasharray="3 3" />
-              <XAxis dataKey="day" stroke="oklch(0.7 0.02 250)" fontSize={11} />
-              <YAxis stroke="oklch(0.7 0.02 250)" fontSize={11} domain={[6, 9]} />
+              <CartesianGrid stroke="#e2e8f3" strokeDasharray="3 3" />
+              <XAxis dataKey="day" stroke="#56688c" fontSize={11} />
+              <YAxis stroke="#56688c" fontSize={11} domain={[6, 9]} />
               <Tooltip
                 contentStyle={{
-                  background: "oklch(0.22 0.035 250)",
-                  border: "1px solid oklch(0.32 0.04 250)",
+                  background: "#ffffff",
+                  border: "1px solid #d5deec",
                   borderRadius: 8,
+                  color: "#0a1a3f",
                 }}
               />
-              <Area dataKey="ph" stroke="oklch(0.82 0.15 200)" strokeWidth={2} fill="url(#g1)" />
+              <Area dataKey="ph" stroke="#1E47C0" strokeWidth={2} fill="url(#g1)" />
             </AreaChart>
           </ResponsiveContainer>
         </ChartCard>
@@ -349,21 +350,22 @@ export function AnalyticsView({ robots, samples, thresholds }: Props) {
             <AreaChart data={chartData}>
               <defs>
                 <linearGradient id="g2" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="oklch(0.72 0.2 145)" stopOpacity={0.6} />
-                  <stop offset="100%" stopColor="oklch(0.72 0.2 145)" stopOpacity={0} />
+                  <stop offset="0%" stopColor="#29A98D" stopOpacity={0.55} />
+                  <stop offset="100%" stopColor="#29A98D" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid stroke="oklch(0.32 0.04 250)" strokeDasharray="3 3" />
-              <XAxis dataKey="day" stroke="oklch(0.7 0.02 250)" fontSize={11} />
-              <YAxis stroke="oklch(0.7 0.02 250)" fontSize={11} />
+              <CartesianGrid stroke="#e2e8f3" strokeDasharray="3 3" />
+              <XAxis dataKey="day" stroke="#56688c" fontSize={11} />
+              <YAxis stroke="#56688c" fontSize={11} />
               <Tooltip
                 contentStyle={{
-                  background: "oklch(0.22 0.035 250)",
-                  border: "1px solid oklch(0.32 0.04 250)",
+                  background: "#ffffff",
+                  border: "1px solid #d5deec",
                   borderRadius: 8,
+                  color: "#0a1a3f",
                 }}
               />
-              <Area dataKey="oxygen" stroke="oklch(0.72 0.2 145)" strokeWidth={2} fill="url(#g2)" />
+              <Area dataKey="oxygen" stroke="#29A98D" strokeWidth={2} fill="url(#g2)" />
             </AreaChart>
           </ResponsiveContainer>
         </ChartCard>
@@ -375,21 +377,22 @@ export function AnalyticsView({ robots, samples, thresholds }: Props) {
         >
           <ResponsiveContainer width="100%" height={240}>
             <LineChart data={chartData}>
-              <CartesianGrid stroke="oklch(0.32 0.04 250)" strokeDasharray="3 3" />
-              <XAxis dataKey="day" stroke="oklch(0.7 0.02 250)" fontSize={11} />
-              <YAxis stroke="oklch(0.7 0.02 250)" fontSize={11} />
+              <CartesianGrid stroke="#e2e8f3" strokeDasharray="3 3" />
+              <XAxis dataKey="day" stroke="#56688c" fontSize={11} />
+              <YAxis stroke="#56688c" fontSize={11} />
               <Tooltip
                 contentStyle={{
-                  background: "oklch(0.22 0.035 250)",
-                  border: "1px solid oklch(0.32 0.04 250)",
+                  background: "#ffffff",
+                  border: "1px solid #d5deec",
                   borderRadius: 8,
+                  color: "#0a1a3f",
                 }}
               />
               <Legend wrapperStyle={{ fontSize: 12 }} />
               <Line
                 type="monotone"
                 dataKey="turbidity"
-                stroke="oklch(0.8 0.18 75)"
+                stroke="#E8A317"
                 strokeWidth={2}
                 dot={false}
                 name="Мутность"
@@ -397,7 +400,7 @@ export function AnalyticsView({ robots, samples, thresholds }: Props) {
               <Line
                 type="monotone"
                 dataKey="temperature"
-                stroke="oklch(0.72 0.18 220)"
+                stroke="#4A8FF0"
                 strokeWidth={2}
                 dot={false}
                 name="Температура"
