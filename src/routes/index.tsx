@@ -11,7 +11,7 @@ import { SampleDialog } from "@/components/app/SampleDialog";
 import { DevicesView } from "@/components/app/DevicesView";
 import { AnalyticsView } from "@/components/app/AnalyticsView";
 import { SettingsView } from "@/components/app/SettingsView";
-import { initialRobots, initialSamples, RESERVOIR } from "@/components/app/mock-data";
+import { initialRobots, initialSamples, RESERVOIR, clampToLake } from "@/components/app/mock-data";
 import { useRealtimeSimulation } from "@/components/app/useRealtimeSimulation";
 import { useEventLog } from "@/components/app/useEventLog";
 import { useThresholds } from "@/components/app/thresholds";
@@ -23,10 +23,13 @@ import type { Robot, Sample } from "@/components/app/types";
 function makeSample(robot: Robot, seq: number): Sample {
   const rnd = (min: number, max: number, dp = 2) =>
     +(min + Math.random() * (max - min)).toFixed(dp);
+  // keep the measurement point strictly inside the water, even if the robot
+  // is hugging the shoreline
+  const position = clampToLake(robot.position);
   return {
     id: `s-live-${seq}`,
     robotId: robot.id,
-    position: { x: robot.position.x, y: robot.position.y },
+    position,
     date: new Date().toISOString(),
     ph: rnd(6.4, 8.8),
     oxygen: rnd(4, 11),
@@ -34,7 +37,7 @@ function makeSample(robot: Robot, seq: number): Sample {
     temperature: rnd(11, 27, 1),
     depth: rnd(1.5, 20, 1),
     pollution: rnd(6, 82, 0),
-    microplastic: microplasticAt(robot.position, (Math.random() - 0.5) * 0.3),
+    microplastic: microplasticAt(position, (Math.random() - 0.5) * 0.3),
   };
 }
 

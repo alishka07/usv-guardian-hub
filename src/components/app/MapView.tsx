@@ -22,6 +22,13 @@ import type { Robot, Sample, Thresholds } from "./types";
 import { MAP_LANDMARKS, RESERVOIR } from "./mock-data";
 import { MICRO_SOURCES } from "./microplastic";
 
+// Distance label for the scale bar — picks a sensible precision.
+function fmtKm(v: number): string {
+  if (v >= 10) return Math.round(v).toString();
+  if (v >= 1) return v.toFixed(1);
+  return v.toFixed(2);
+}
+
 // Heatmap colour ramp for microparticle concentration (particles/m³).
 function heatColor(v: number): string {
   if (v < 500) return "oklch(0.80 0.15 200)"; // teal — low
@@ -1004,11 +1011,14 @@ export function MapView({
           )}
         </div>
 
-        {/* Bottom-right: scale bar */}
+        {/* Bottom-right: scale bar — distance updates with zoom */}
         <div className="absolute bottom-4 right-4 glass-panel rounded-xl px-3 py-2 text-[10px] font-mono">
-          <div className="flex items-center gap-1 mb-1 text-muted-foreground">
-            <Ruler className="size-3" />
-            <span className="uppercase tracking-[0.14em] text-[9px]">Масштаб</span>
+          <div className="flex items-center justify-between gap-2 mb-1 text-muted-foreground">
+            <span className="flex items-center gap-1">
+              <Ruler className="size-3" />
+              <span className="uppercase tracking-[0.14em] text-[9px]">Масштаб</span>
+            </span>
+            <span className="text-cyan-accent/80">{zoom.toFixed(1)}×</span>
           </div>
           <div className="flex items-end">
             <div className="h-2 w-10 bg-foreground/80 rounded-l-sm" />
@@ -1016,8 +1026,8 @@ export function MapView({
           </div>
           <div className="flex justify-between w-20 mt-0.5 text-muted-foreground">
             <span>0</span>
-            <span>5</span>
-            <span>10 км</span>
+            <span>{fmtKm(5 / zoom)}</span>
+            <span>{fmtKm(10 / zoom)} км</span>
           </div>
         </div>
       </div>

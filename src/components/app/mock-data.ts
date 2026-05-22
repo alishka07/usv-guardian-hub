@@ -89,21 +89,52 @@ export const initialRobots: Robot[] = [
 const seed = (i: number) => Math.sin(i * 9301 + 49297) * 233280;
 const rand = (i: number) => Math.abs(seed(i) - Math.floor(seed(i)));
 
-// Sample positions follow the reservoir's diagonal water corridor.
-// The lake polygon (in MapView) runs roughly SW (8,68) → NE (86,33).
-// We parametrize a centerline and add a narrow lateral jitter so all points stay inside the water.
+// Reservoir water band as a centerline (yc) + half-height (h) over x — matches
+// RESERVOIR_PATH in MapView. h is kept slightly under the true half-height so a
+// margin is left to the shore. Single source of truth for "is this point in water".
+const LAKE_PROFILE: { x: number; yc: number; h: number }[] = [
+  { x: 8, yc: 63, h: 1.6 },
+  { x: 15, yc: 59.5, h: 4.2 },
+  { x: 30, yc: 54, h: 5.4 },
+  { x: 43, yc: 50.7, h: 6.0 },
+  { x: 52, yc: 47.5, h: 6.2 },
+  { x: 66, yc: 43, h: 5.7 },
+  { x: 82, yc: 39.3, h: 4.3 },
+  { x: 90, yc: 36.8, h: 2.5 },
+  { x: 94, yc: 36, h: 1.1 },
+];
+
+// Water band (centerline + half-height) at a given x.
+export function lakeBandAt(x: number): { yc: number; h: number } {
+  const p = LAKE_PROFILE;
+  if (x <= p[0].x) return { yc: p[0].yc, h: p[0].h };
+  if (x >= p[p.length - 1].x) return { yc: p[p.length - 1].yc, h: p[p.length - 1].h };
+  for (let i = 1; i < p.length; i++) {
+    if (x <= p[i].x) {
+      const a = p[i - 1];
+      const b = p[i];
+      const f = (x - a.x) / (b.x - a.x);
+      return { yc: a.yc + (b.yc - a.yc) * f, h: a.h + (b.h - a.h) * f };
+    }
+  }
+  return { yc: p[p.length - 1].yc, h: p[p.length - 1].h };
+}
+
+// Pulls a point safely inside the water band, keeping clear of the shoreline.
+export function clampToLake(pos: { x: number; y: number }): { x: number; y: number } {
+  const x = Math.max(9, Math.min(93, pos.x));
+  const { yc, h } = lakeBandAt(x);
+  const m = h * 0.85;
+  const y = Math.max(yc - m, Math.min(yc + m, pos.y));
+  return { x: +x.toFixed(2), y: +y.toFixed(2) };
+}
+
+// A sample position on the lake: x from the parameter t, y inside the water band.
 function pointOnLake(t: number, lateral: number) {
-  // centerline (matches the broadened reservoir path in MapView)
   const cx = 14 + t * 70; // 14 → 84
-  const cy = 60 - t * 21 - Math.sin(t * Math.PI) * 2; // 60 → 39, slight bow
-  // perpendicular to centerline (approx): direction (70, -21) → normal (21, 70) normalized
-  const nLen = Math.hypot(21, 70);
-  const nx = 21 / nLen;
-  const ny = 70 / nLen;
-  // narrower at the ends, wider in the middle — fills the broad central basin
-  const halfWidth = 2.5 + Math.sin(t * Math.PI) * 3.2;
-  const off = lateral * halfWidth;
-  return { x: +(cx + nx * off).toFixed(2), y: +(cy + ny * off).toFixed(2) };
+  const { yc, h } = lakeBandAt(cx);
+  const y = yc + lateral * h * 0.8; // lateral ∈ [-1,1] → safely within the band
+  return { x: +cx.toFixed(2), y: +y.toFixed(2) };
 }
 
 export const initialSamples: Sample[] = Array.from({ length: 32 }, (_, i) => {
