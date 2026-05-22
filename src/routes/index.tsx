@@ -45,7 +45,7 @@ export const Route = createFileRoute("/")({
   component: App,
   head: () => ({
     meta: [
-      { title: "USV · Капшагай · Мониторинг качества воды" },
+      { title: "AquaWatch · Капшагай · Мониторинг качества воды" },
       {
         name: "description",
         content:

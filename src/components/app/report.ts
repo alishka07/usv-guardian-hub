@@ -254,7 +254,7 @@ export function buildHtmlReport(
   </table>
 
   <div class="footer">
-    USV Guardian Hub · Капшагайское водохранилище · отчёт сформирован автоматически.
+    AquaWatch · Капшагайское водохранилище · отчёт сформирован автоматически.
     Пороги качества: pH ${thresholds.ph.warnMin}–${thresholds.ph.warnMax} (норма ${thresholds.ph.min}–${thresholds.ph.max}),
     O₂ ≥ ${thresholds.oxygen.warn} мг/л (критично < ${thresholds.oxygen.critical}),
     мутность ≤ ${thresholds.turbidity.warn} NTU (критично > ${thresholds.turbidity.critical}),
