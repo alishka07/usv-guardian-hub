@@ -511,26 +511,39 @@ export function MapView({
             </div>
           ))}
 
-          {/* === Microparticle inflow sources === */}
-          {showHeatmap &&
-            MICRO_SOURCES.map((src) => (
+          {/* === Pollution sources (always visible: red = high, yellow = moderate) === */}
+          {MICRO_SOURCES.map((src) => {
+            const high = src.strength >= 2000;
+            const dot = high ? "oklch(0.64 0.22 25)" : "oklch(0.84 0.17 95)";
+            return (
               <div
                 key={`src-${src.label}`}
                 style={{ left: `${src.x}%`, top: `${src.y}%` }}
                 className="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-none z-[2]"
               >
                 <div className="flex items-center gap-1.5">
-                  <Sparkles className="size-3 text-[oklch(0.78_0.18_320)]" />
+                  <span className="relative flex size-3 items-center justify-center">
+                    <span
+                      className="absolute inline-flex size-3 rounded-full opacity-60 animate-ping"
+                      style={{ background: dot }}
+                    />
+                    <span
+                      className="relative inline-flex size-2.5 rounded-full ring-2 ring-background/70"
+                      style={{ background: dot, boxShadow: `0 0 10px ${dot}` }}
+                    />
+                  </span>
                   <span
-                    className="text-[9px] uppercase tracking-[0.12em] font-medium text-foreground/85
-                               bg-card/70 backdrop-blur-md px-1.5 py-0.5 rounded-full whitespace-nowrap
-                               border border-[oklch(0.62_0.25_320)]/30 shadow-sm"
+                    className="text-[9px] uppercase tracking-[0.12em] font-medium text-foreground/90
+                               bg-card/75 backdrop-blur-md px-1.5 py-0.5 rounded-full whitespace-nowrap
+                               border shadow-sm"
+                    style={{ borderColor: `color-mix(in oklab, ${dot} 45%, transparent)` }}
                   >
                     {src.label}
                   </span>
                 </div>
               </div>
-            ))}
+            );
+          })}
 
           {/* === Sample markers / clusters === */}
           {clusters.map((c, i) => (
