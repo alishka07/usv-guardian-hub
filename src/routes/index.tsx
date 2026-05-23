@@ -16,6 +16,7 @@ import { useRealtimeSimulation } from "@/domain/acquisition/simulationSource";
 import { useEventLog } from "@/domain/events/eventLog";
 import { useThresholds } from "@/domain/analysis/quality";
 import { microplasticAt } from "@/domain/analysis/microplastic";
+import { useTier } from "@/domain/tiers/plan";
 import type { Robot, Sample } from "@/domain/types";
 
 // Builds a fresh measurement at a robot's current position — used both by the
@@ -66,6 +67,7 @@ function App() {
   const [editMode, setEditMode] = useState(false);
   const [draftWaypoints, setDraftWaypoints] = useState<{ x: number; y: number }[]>([]);
   const { thresholds, setThresholds, resetThresholds } = useThresholds();
+  const { tier, setTier, has } = useTier();
 
   useRealtimeSimulation(setRobots, true);
   const { log, push: pushEvent } = useEventLog(robots);
@@ -143,6 +145,8 @@ function App() {
           rtlCount={rtlCount}
           sampleCount={samples.length}
           clock={clockText}
+          tier={tier}
+          onTierChange={setTier}
         />
 
         <SidebarInset className="bg-transparent">
@@ -218,6 +222,7 @@ function App() {
                     setDraftWaypoints={setDraftWaypoints}
                     logEvent={pushEvent}
                     onCollectSample={collectSample}
+                    has={has}
                   />
                 )}
                 {selectedRobot && (

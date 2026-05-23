@@ -44,6 +44,7 @@ import { useEffect, useState } from "react";
 import { ResponsiveContainer, AreaChart, Area } from "recharts";
 import type { Robot, Sample, EventType, EventLogEntry } from "@/domain/types";
 import { toGps, formatGps } from "@/domain/intelligence/geo";
+import type { Feature } from "@/domain/tiers/plan";
 import { CameraFeed } from "./CameraFeed";
 import { DiagnosticsDialog } from "./DiagnosticsDialog";
 
@@ -61,6 +62,7 @@ type Props = {
   setDraftWaypoints: (wps: { x: number; y: number }[]) => void;
   logEvent?: (robot: Robot, type: EventType, extra?: string) => EventLogEntry;
   onCollectSample?: (robot: Robot) => Sample;
+  has?: (f: Feature) => boolean;
 };
 
 export function RobotPanel({
@@ -73,7 +75,10 @@ export function RobotPanel({
   setDraftWaypoints,
   logEvent,
   onCollectSample,
+  has,
 }: Props) {
+  // gate by tier when a `has` predicate is provided; default to "show everything"
+  const can = (f: Feature) => (has ? has(f) : true);
   const [launching, setLaunching] = useState(false);
   const [estopOpen, setEstopOpen] = useState(false);
   const [rtlOpen, setRtlOpen] = useState(false);
@@ -263,13 +268,15 @@ export function RobotPanel({
           <span className="text-[10px] text-muted-foreground ml-auto font-mono">UPD {fmtTs()}</span>
         </div>
 
-        {/* Onboard camera feed */}
-        <div className="space-y-1">
-          <Label className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
-            Бортовая камера
-          </Label>
-          <CameraFeed label={`USV-CAM · ${robot.serial}`} className="h-32" live={!offline} />
-        </div>
+        {/* Onboard camera feed — tier: camera */}
+        {can("camera") && (
+          <div className="space-y-1">
+            <Label className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+              Бортовая камера
+            </Label>
+            <CameraFeed label={`USV-CAM · ${robot.serial}`} className="h-32" live={!offline} />
+          </div>
+        )}
 
         {/* Battery with sparkline */}
         <div className="rounded-lg bg-panel/50 border border-border p-3">
@@ -332,18 +339,20 @@ export function RobotPanel({
             <Activity className="size-3.5 text-primary" /> Бортовые системы
           </Label>
 
-          <Button
-            onClick={collect}
-            disabled={collecting || offline || !onCollectSample}
-            className="w-full bg-cyan-accent/90 text-background hover:bg-cyan-accent font-semibold"
-          >
-            {collecting ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : (
-              <Beaker className="size-4" />
-            )}
-            Взять пробу сейчас
-          </Button>
+          {can("collectSample") && (
+            <Button
+              onClick={collect}
+              disabled={collecting || offline || !onCollectSample}
+              className="w-full bg-cyan-accent/90 text-background hover:bg-cyan-accent font-semibold"
+            >
+              {collecting ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Beaker className="size-4" />
+              )}
+              Взять пробу сейчас
+            </Button>
+          )}
 
           <div className="flex items-center justify-between">
             <Label
@@ -360,77 +369,81 @@ export function RobotPanel({
             />
           </div>
 
-          <Button
-            variant="outline"
-            onClick={() => setDiagOpen(true)}
-            disabled={offline}
-            className="w-full"
-          >
-            <Activity className="size-4" /> Самотест и калибровка
-          </Button>
-        </div>
-
-        {/* Manual remote control */}
-        <div className="rounded-lg border border-border bg-panel/40 p-3 space-y-3">
-          <div className="flex items-center justify-between">
-            <Label
-              htmlFor="manual"
-              className="text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
-            >
-              <Gamepad2 className="size-3.5 text-cyan-accent" /> Ручное управление
-            </Label>
-            <Switch
-              id="manual"
-              checked={!!robot.manual}
-              onCheckedChange={toggleManual}
+          {can("diagnostics") && (
+            <Button
+              variant="outline"
+              onClick={() => setDiagOpen(true)}
               disabled={offline}
-            />
-          </div>
-
-          {robot.manual ? (
-            <div className="flex flex-col items-center gap-1.5">
-              <Button size="icon" variant="outline" className="size-10" onClick={driveForward}>
-                <ArrowUp className="size-5" />
-              </Button>
-              <div className="flex gap-1.5">
-                <Button
-                  size="icon"
-                  variant="outline"
-                  className="size-10"
-                  onClick={() => turn(-20)}
-                  aria-label="Поворот влево"
-                >
-                  <RotateCcw className="size-5" />
-                </Button>
-                <Button
-                  size="icon"
-                  className="size-10 bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                  onClick={stopDrive}
-                  aria-label="Стоп"
-                >
-                  <Square className="size-5" />
-                </Button>
-                <Button
-                  size="icon"
-                  variant="outline"
-                  className="size-10"
-                  onClick={() => turn(20)}
-                  aria-label="Поворот вправо"
-                >
-                  <RotateCw className="size-5" />
-                </Button>
-              </div>
-              <div className="text-[10px] text-muted-foreground font-mono tabular-nums">
-                курс {((robot.heading + 360) % 360).toFixed(0)}° · {robot.speed.toFixed(1)} м/с
-              </div>
-            </div>
-          ) : (
-            <div className="text-xs text-muted-foreground italic">
-              Включите, чтобы вести аппарат вручную: вперёд, поворот, стоп. Автонавигация при этом
-              приостанавливается.
-            </div>
+              className="w-full"
+            >
+              <Activity className="size-4" /> Самотест и калибровка
+            </Button>
           )}
         </div>
+
+        {/* Manual remote control — tier: manualControl */}
+        {can("manualControl") && (
+          <div className="rounded-lg border border-border bg-panel/40 p-3 space-y-3">
+            <div className="flex items-center justify-between">
+              <Label
+                htmlFor="manual"
+                className="text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
+              >
+                <Gamepad2 className="size-3.5 text-cyan-accent" /> Ручное управление
+              </Label>
+              <Switch
+                id="manual"
+                checked={!!robot.manual}
+                onCheckedChange={toggleManual}
+                disabled={offline}
+              />
+            </div>
+
+            {robot.manual ? (
+              <div className="flex flex-col items-center gap-1.5">
+                <Button size="icon" variant="outline" className="size-10" onClick={driveForward}>
+                  <ArrowUp className="size-5" />
+                </Button>
+                <div className="flex gap-1.5">
+                  <Button
+                    size="icon"
+                    variant="outline"
+                    className="size-10"
+                    onClick={() => turn(-20)}
+                    aria-label="Поворот влево"
+                  >
+                    <RotateCcw className="size-5" />
+                  </Button>
+                  <Button
+                    size="icon"
+                    className="size-10 bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    onClick={stopDrive}
+                    aria-label="Стоп"
+                  >
+                    <Square className="size-5" />
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="outline"
+                    className="size-10"
+                    onClick={() => turn(20)}
+                    aria-label="Поворот вправо"
+                  >
+                    <RotateCw className="size-5" />
+                  </Button>
+                </div>
+                <div className="text-[10px] text-muted-foreground font-mono tabular-nums">
+                  курс {((robot.heading + 360) % 360).toFixed(0)}° · {robot.speed.toFixed(1)} м/с
+                </div>
+              </div>
+            ) : (
+              <div className="text-xs text-muted-foreground italic">
+                Включите, чтобы вести аппарат вручную: вперёд, поворот, стоп. Автонавигация при этом
+                приостанавливается.
+              </div>
+            )}
+          </div>
+        )}
 
         <div className="space-y-2">
           <Label className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">

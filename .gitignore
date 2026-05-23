@@ -20,6 +20,12 @@ dist-ssr
 .wrangler/
 .dev.vars
 
+# Tooling caches and non-bun lockfiles (project uses Bun)
+.claude/
+package-lock.json
+ssr.html
+dev*.log
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

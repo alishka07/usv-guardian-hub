@@ -12,6 +12,7 @@ import {
   SidebarFooter,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { TIER_META, type Tier } from "@/domain/tiers/plan";
 
 type View = "map" | "devices" | "analytics" | "settings";
 
@@ -23,9 +24,16 @@ type Props = {
   rtlCount: number;
   sampleCount: number;
   clock: string;
+  tier: Tier;
+  onTierChange: (t: Tier) => void;
 };
 
-const items: { id: View; title: string; icon: typeof MapIcon; badge?: (p: Props) => string | number }[] = [
+const items: {
+  id: View;
+  title: string;
+  icon: typeof MapIcon;
+  badge?: (p: Props) => string | number;
+}[] = [
   { id: "map", title: "Карта", icon: MapIcon, badge: (p) => p.sampleCount },
   { id: "devices", title: "Устройства", icon: Cpu, badge: (p) => p.totalCount },
   { id: "analytics", title: "Аналитика и отчёты", icon: BarChart3 },
@@ -40,8 +48,10 @@ export function AppSidebar(props: Props) {
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
       <SidebarHeader className="px-3 pt-4 pb-3">
         <div className="flex items-center gap-3">
-          <div className="size-10 shrink-0 rounded-xl flex items-center justify-center shadow-lg glow-cyan"
-               style={{ background: "var(--gradient-cyan)" }}>
+          <div
+            className="size-10 shrink-0 rounded-xl flex items-center justify-center shadow-lg glow-cyan"
+            style={{ background: "var(--gradient-cyan)" }}
+          >
             <Waves className="size-5 text-primary-foreground" />
           </div>
           {!collapsed && (
@@ -77,7 +87,10 @@ export function AppSidebar(props: Props) {
                       tooltip={item.title}
                       className="h-10 rounded-lg transition-all data-[active=true]:bg-sidebar-accent data-[active=true]:text-cyan-accent data-[active=true]:shadow-[inset_0_0_0_1px_color-mix(in_oklab,var(--cyan-accent)_35%,transparent)]"
                     >
-                      <button onClick={() => props.onChange(item.id)} className="w-full flex items-center gap-3">
+                      <button
+                        onClick={() => props.onChange(item.id)}
+                        className="w-full flex items-center gap-3"
+                      >
                         <Icon className="size-4" />
                         {!collapsed && (
                           <>
@@ -99,7 +112,30 @@ export function AppSidebar(props: Props) {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="px-3 pb-4 pt-2">
+      <SidebarFooter className="px-3 pb-4 pt-2 space-y-2">
+        {!collapsed && (
+          <div className="rounded-xl border border-sidebar-border bg-sidebar-accent/40 backdrop-blur px-3 py-2.5 space-y-1.5">
+            <div className="text-[10px] uppercase tracking-[0.14em] text-sidebar-foreground/60 font-display">
+              Тариф · {TIER_META[props.tier].series}
+            </div>
+            <div className="flex items-center gap-1">
+              {(["eco", "pro", "gov"] as Tier[]).map((t) => (
+                <button
+                  key={t}
+                  onClick={() => props.onTierChange(t)}
+                  title={TIER_META[t].description}
+                  className={`flex-1 text-[10px] uppercase tracking-wider font-bold py-1.5 rounded-md border transition ${
+                    props.tier === t
+                      ? "bg-accent text-accent-foreground border-accent"
+                      : "bg-transparent border-sidebar-border text-sidebar-foreground/70 hover:bg-sidebar-accent"
+                  }`}
+                >
+                  {TIER_META[t].label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
         {!collapsed ? (
           <div className="rounded-xl border border-sidebar-border bg-sidebar-accent/40 backdrop-blur px-3 py-3 space-y-2">
             <div className="flex items-center justify-between text-[10.5px] uppercase tracking-[0.14em] text-sidebar-foreground/60 font-display">
@@ -112,14 +148,17 @@ export function AppSidebar(props: Props) {
               <Activity className="size-3.5 text-success" />
               <span className="text-sidebar-foreground/80">В сети</span>
               <span className="ml-auto font-display font-semibold text-success">
-                {props.onlineCount}<span className="text-sidebar-foreground/40 font-normal">/{props.totalCount}</span>
+                {props.onlineCount}
+                <span className="text-sidebar-foreground/40 font-normal">/{props.totalCount}</span>
               </span>
             </div>
             {props.rtlCount > 0 && (
               <div className="flex items-center gap-2 text-[11px]">
                 <Activity className="size-3.5 text-warning" />
                 <span className="text-sidebar-foreground/80">RTL</span>
-                <span className="ml-auto font-display font-semibold text-warning">{props.rtlCount}</span>
+                <span className="ml-auto font-display font-semibold text-warning">
+                  {props.rtlCount}
+                </span>
               </div>
             )}
           </div>
