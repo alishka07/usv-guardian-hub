@@ -51,20 +51,20 @@ type Props = {
   thresholds: Thresholds;
 };
 
-// Kapshagay reservoir — broad W→E lens, narrow at the dam and the Ili mouth, wide in the middle.
+// Astana / Esil reservoir — large oblong body covering most of the canvas,
+// narrowing at the dam (west) and the Esil river mouth (north-east).
 const RESERVOIR_PATH = `
-  M 6,64
-  C 5,61 8,57 15,55
-  C 26,50 38,45 52,41
-  C 65,37 78,34 90,33
-  C 94,32.6 96,34 95,37
-  C 93,40 88,42 82,44
-  C 68,49 54,53 43,57
-  C 31,61 20,64 13,66
-  C 9,67 7,66 6,64 Z
+  M 6,58
+  C 4,50 10,42 22,36
+  C 36,28 54,24 72,26
+  C 84,28 92,32 96,38
+  C 97,44 94,52 88,58
+  C 82,66 70,74 54,78
+  C 38,80 22,76 12,70
+  C 6,66 5,62 6,58 Z
 `;
-const RIVER_PATH = `M 94,34 C 97,30 98,25 99,19`;
-const TRIB_PATH = `M 62,50 C 64,55 65,59 63,64`;
+const RIVER_PATH = `M 92,32 C 96,26 98,20 99,12`;
+const TRIB_PATH = `M 64,60 C 66,66 68,72 66,78`;
 
 export function MapView({
   robots,
@@ -511,26 +511,39 @@ export function MapView({
             </div>
           ))}
 
-          {/* === Microparticle inflow sources === */}
-          {showHeatmap &&
-            MICRO_SOURCES.map((src) => (
+          {/* === Pollution sources (always visible: red = high, yellow = moderate) === */}
+          {MICRO_SOURCES.map((src) => {
+            const high = src.strength >= 2000;
+            const dot = high ? "oklch(0.64 0.22 25)" : "oklch(0.84 0.17 95)";
+            return (
               <div
                 key={`src-${src.label}`}
                 style={{ left: `${src.x}%`, top: `${src.y}%` }}
                 className="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-none z-[2]"
               >
                 <div className="flex items-center gap-1.5">
-                  <Sparkles className="size-3 text-[oklch(0.78_0.18_320)]" />
+                  <span className="relative flex size-3 items-center justify-center">
+                    <span
+                      className="absolute inline-flex size-3 rounded-full opacity-60 animate-ping"
+                      style={{ background: dot }}
+                    />
+                    <span
+                      className="relative inline-flex size-2.5 rounded-full ring-2 ring-background/70"
+                      style={{ background: dot, boxShadow: `0 0 10px ${dot}` }}
+                    />
+                  </span>
                   <span
-                    className="text-[9px] uppercase tracking-[0.12em] font-medium text-foreground/85
-                               bg-card/70 backdrop-blur-md px-1.5 py-0.5 rounded-full whitespace-nowrap
-                               border border-[oklch(0.62_0.25_320)]/30 shadow-sm"
+                    className="text-[9px] uppercase tracking-[0.12em] font-medium text-foreground/90
+                               bg-card/75 backdrop-blur-md px-1.5 py-0.5 rounded-full whitespace-nowrap
+                               border shadow-sm"
+                    style={{ borderColor: `color-mix(in oklab, ${dot} 45%, transparent)` }}
                   >
                     {src.label}
                   </span>
                 </div>
               </div>
-            ))}
+            );
+          })}
 
           {/* === Sample markers / clusters === */}
           {clusters.map((c, i) => (
