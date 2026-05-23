@@ -686,3 +686,280 @@
 .aw-landing footer .small {
   font-size: 14px;
 }
+
+/* ─────────────────────────────────────────────────────────────────
+   Visual polish — orbs, wave dividers, icons, fade-up, rich footer
+   ───────────────────────────────────────────────────────────────── */
+
+/* ambient gradient orbs behind the hero */
+.aw-landing .hero {
+  isolation: isolate;
+}
+.aw-landing .hero-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.45;
+  pointer-events: none;
+  z-index: 0;
+  will-change: transform;
+}
+.aw-landing .hero-orb-1 {
+  width: 520px;
+  height: 520px;
+  background: radial-gradient(circle, var(--aw-teal) 0%, transparent 70%);
+  top: -140px;
+  left: -120px;
+  animation: aw-orb 18s ease-in-out infinite;
+}
+.aw-landing .hero-orb-2 {
+  width: 440px;
+  height: 440px;
+  background: radial-gradient(circle, var(--aw-corn) 0%, transparent 70%);
+  bottom: -120px;
+  right: 22%;
+  animation: aw-orb 22s ease-in-out infinite reverse;
+}
+.aw-landing .hero-orb-3 {
+  width: 320px;
+  height: 320px;
+  background: radial-gradient(circle, var(--aw-lime) 0%, transparent 70%);
+  top: 40%;
+  right: -70px;
+  opacity: 0.3;
+  animation: aw-orb 26s ease-in-out infinite;
+}
+@keyframes aw-orb {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(36px, -28px) scale(1.08);
+  }
+}
+
+/* wave dividers between sections */
+.aw-landing .wave-divider {
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: 80px;
+  display: block;
+  z-index: 4;
+  pointer-events: none;
+}
+.aw-landing .stats {
+  position: relative;
+}
+
+/* scroll-down hint inside hero */
+.aw-landing .scroll-hint {
+  position: absolute;
+  bottom: 96px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  z-index: 5;
+  animation: aw-fadeUp 1s 1.2s forwards;
+  opacity: 0;
+}
+.aw-landing .scroll-hint .arrow {
+  width: 12px;
+  height: 12px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+  animation: aw-bounce 1.8s ease-in-out infinite;
+}
+@keyframes aw-bounce {
+  0%,
+  100% {
+    transform: rotate(45deg) translateY(0);
+    opacity: 0.5;
+  }
+  50% {
+    transform: rotate(45deg) translateY(6px);
+    opacity: 1;
+  }
+}
+
+/* third telemetry — mid-left of the buoy, balances t1/t2 */
+.aw-landing .t3 {
+  top: 44%;
+  left: -16%;
+  animation: aw-float 6.5s ease-in-out infinite 1s;
+}
+@media (max-width: 900px) {
+  .aw-landing .t3 {
+    display: none;
+  }
+}
+
+/* layer cards — icon next to title */
+.aw-landing .layer-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+.aw-landing .layer-head h3 {
+  margin: 0;
+}
+.aw-landing .layer-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+.aw-landing .layer.l1 .layer-icon {
+  color: var(--aw-cobalt);
+}
+.aw-landing .layer.l2 .layer-icon {
+  color: var(--aw-corn);
+}
+.aw-landing .layer.l3 .layer-icon {
+  color: var(--aw-teal);
+}
+.aw-landing .layer.l4 .layer-icon {
+  color: var(--aw-teal-deep);
+}
+
+/* tier icons (top-right corner) */
+.aw-landing .tier-icon {
+  position: absolute;
+  top: 32px;
+  right: 32px;
+  width: 28px;
+  height: 28px;
+  opacity: 0.9;
+}
+.aw-landing .tier.eco .tier-icon {
+  color: var(--aw-teal);
+}
+.aw-landing .tier.pro .tier-icon {
+  color: var(--aw-corn);
+}
+.aw-landing .tier.gov .tier-icon {
+  color: var(--aw-lime);
+}
+
+/* gradient glow on Pro card (the "хит" tier) */
+.aw-landing .tier.pro::before {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  border-radius: 26px;
+  background: linear-gradient(135deg, var(--aw-corn), var(--aw-lime), var(--aw-teal));
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+.aw-landing .tier.pro:hover::before {
+  opacity: 0.5;
+  filter: blur(8px);
+}
+
+/* scroll-triggered reveal */
+.aw-landing .reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition:
+    opacity 0.7s ease,
+    transform 0.7s ease;
+}
+.aw-landing .reveal.aw-in-view {
+  opacity: 1;
+  transform: translateY(0);
+}
+.aw-landing .layers .reveal:nth-child(2) {
+  transition-delay: 0.08s;
+}
+.aw-landing .layers .reveal:nth-child(3) {
+  transition-delay: 0.16s;
+}
+.aw-landing .layers .reveal:nth-child(4) {
+  transition-delay: 0.24s;
+}
+.aw-landing .tiers .reveal:nth-child(2) {
+  transition-delay: 0.1s;
+}
+.aw-landing .tiers .reveal:nth-child(3) {
+  transition-delay: 0.2s;
+}
+
+/* rich footer — 4-column grid */
+.aw-landing footer {
+  text-align: left;
+}
+.aw-landing .footer-grid {
+  max-width: 1180px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr 1fr;
+  gap: 32px;
+}
+@media (max-width: 720px) {
+  .aw-landing .footer-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+.aw-landing .footer-grid h4 {
+  font-family: var(--aw-display);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 14px;
+}
+.aw-landing .footer-grid ul {
+  list-style: none;
+  display: grid;
+  gap: 9px;
+}
+.aw-landing .footer-grid li a {
+  color: rgba(255, 255, 255, 0.75);
+  text-decoration: none;
+  font-size: 14px;
+  transition: color 0.2s;
+}
+.aw-landing .footer-grid li a:hover {
+  color: var(--aw-lime);
+}
+.aw-landing .footer-tagline {
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 14px;
+  line-height: 1.55;
+  margin-top: 10px;
+  max-width: 280px;
+}
+.aw-landing .footer-bottom {
+  max-width: 1180px;
+  margin: 32px auto 0;
+  padding-top: 22px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+}
+@media (max-width: 720px) {
+  .aw-landing .footer-bottom {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+}
