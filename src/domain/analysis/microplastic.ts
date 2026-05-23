@@ -30,9 +30,9 @@ export function microplasticAt(pos: { x: number; y: number }, jitter = 0): numbe
 export type ZoneId = "west" | "center" | "east";
 
 export const ZONES: { id: ZoneId; label: string; short: string; from: number; to: number }[] = [
-  { id: "west", label: "Западный плёс · плотина ГЭС", short: "Запад", from: 0, to: 32 },
-  { id: "center", label: "Центральный плёс", short: "Центр", from: 32, to: 62 },
-  { id: "east", label: "Восточный плёс · устье Или", short: "Восток", from: 62, to: 100 },
+  { id: "west", label: "Западный плёс · плотина", short: "Запад", from: 0, to: 32 },
+  { id: "center", label: "Центральный плёс · Астана", short: "Центр", from: 32, to: 62 },
+  { id: "east", label: "Восточный плёс · устье Есиль", short: "Восток", from: 62, to: 100 },
 ];
 
 export function zoneOf(pos: { x: number }): ZoneId {
