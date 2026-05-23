@@ -252,7 +252,7 @@ function App() {
               />
             )}
             {view === "analytics" && (
-              <AnalyticsView robots={robots} samples={samples} thresholds={thresholds} />
+              <AnalyticsView robots={robots} samples={samples} thresholds={thresholds} has={has} />
             )}
             {view === "settings" && (
               <SettingsView
@@ -272,6 +272,7 @@ function App() {
             setHighlightedSampleId(undefined);
           }}
           thresholds={thresholds}
+          has={has}
         />
       </div>
     </SidebarProvider>

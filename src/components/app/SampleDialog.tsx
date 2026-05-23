@@ -19,6 +19,8 @@ import { DEFAULT_THRESHOLDS } from "@/domain/types";
 import { assessQuality, pollutionLabel, type QualityTone } from "@/domain/analysis/quality";
 import { formatGps } from "@/domain/intelligence/geo";
 import { microplasticLabel, MICRO_TONE_CLASS } from "@/domain/analysis/microplastic";
+import { classifySourceHeuristic } from "@/domain/intelligence/sourceClassifier";
+import type { Feature } from "@/domain/tiers/plan";
 import { CameraFeed } from "./CameraFeed";
 
 const ICON_FOR_SCORE = (score: number) => {
@@ -59,12 +61,16 @@ export function SampleDialog({
   sample,
   onClose,
   thresholds = DEFAULT_THRESHOLDS,
+  has,
 }: {
   sample: Sample | null;
   onClose: () => void;
   thresholds?: Thresholds;
+  has?: (f: Feature) => boolean;
 }) {
   if (!sample) return null;
+  const can = (f: Feature) => (has ? has(f) : true);
+  const sourceCls = can("intelligence.sourceClassifier") ? classifySourceHeuristic(sample) : null;
   const d = new Date(sample.date);
   const quality = assessQuality(sample, thresholds);
   const QIcon = ICON_FOR_SCORE(quality.score);
@@ -190,6 +196,31 @@ export function SampleDialog({
             </div>
           ))}
         </div>
+
+        {/* AI source classifier (Pro / Gov) — heuristic stub, real call routes through a Worker */}
+        {sourceCls && (
+          <div className="rounded-lg border border-primary/30 bg-primary/5 p-4">
+            <div className="flex items-center justify-between">
+              <span className="text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                <Sparkles className="size-4 text-primary" /> ИИ-классификация источника
+              </span>
+              <span className="text-[10px] uppercase tracking-wider font-semibold text-primary">
+                {Math.round(sourceCls.confidence * 100)}% уверенность
+              </span>
+            </div>
+            <div className="mt-2 text-xl font-bold text-foreground">{sourceCls.label}</div>
+            <div className="mt-1 text-xs text-muted-foreground">{sourceCls.rationale}</div>
+            {sourceCls.alternatives.length > 0 && (
+              <div className="mt-2 text-[10px] text-muted-foreground/80 font-mono">
+                альт.:{" "}
+                {sourceCls.alternatives
+                  .slice(0, 3)
+                  .map((a) => `${a.label} ${Math.round(a.confidence * 100)}%`)
+                  .join(" · ")}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Pollution */}
         <div className={`rounded-lg border ${pTone.border} ${pTone.bg} p-4`}>

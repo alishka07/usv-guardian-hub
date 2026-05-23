@@ -31,24 +31,43 @@ import {
   FileDown,
   BarChart3,
   Sparkles,
+  Activity,
+  GitBranch,
+  FileSpreadsheet,
 } from "lucide-react";
 import { toast } from "sonner";
 import type { Robot, Sample, Thresholds } from "@/domain/types";
 import { filterSamples, summarize, downloadCSV, downloadPDF } from "@/domain/reporting/report";
+import { downloadExcel } from "@/domain/reporting/excel";
 import { ZONES, zoneOf, microplasticLabel, MICRO_TONE_CLASS } from "@/domain/analysis/microplastic";
+import { detectAllAnomalies } from "@/domain/analysis/anomaly";
+import { computeGradients, latestSampleByRobot } from "@/domain/analysis/gradients";
+import type { Feature } from "@/domain/tiers/plan";
 
 type Props = {
   robots: Robot[];
   samples: Sample[];
   thresholds: Thresholds;
+  has?: (f: Feature) => boolean;
 };
 
 const isoDay = (d: Date) => d.toISOString().slice(0, 10);
 const daysAgo = (n: number) => isoDay(new Date(Date.now() - n * 86_400_000));
 
-export function AnalyticsView({ robots, samples, thresholds }: Props) {
+const METRIC_LABEL: Record<string, string> = {
+  ph: "pH",
+  oxygen: "O₂",
+  turbidity: "Мутность",
+  temperature: "T",
+  pollution: "Загрязнение",
+  microplastic: "Микрочастицы",
+};
+
+export function AnalyticsView({ robots, samples, thresholds, has }: Props) {
+  const can = (f: Feature) => (has ? has(f) : true);
   const [loadingPdf, setLoadingPdf] = useState(false);
   const [loadingCsv, setLoadingCsv] = useState(false);
+  const [loadingXlsx, setLoadingXlsx] = useState(false);
   const [from, setFrom] = useState(() => daysAgo(30));
   const [to, setTo] = useState(() => isoDay(new Date()));
   const [robotId, setRobotId] = useState("all");
@@ -115,6 +134,14 @@ export function AnalyticsView({ robots, samples, thresholds }: Props) {
     return Math.round(filtered.reduce((a, s) => a + (s.microplastic ?? 0), 0) / filtered.length);
   }, [filtered]);
 
+  // Server-style analysis (z-score anomalies, inter-station gradients) — stubs
+  // executed in the browser today; will move behind a Python service later.
+  const anomalies = useMemo(() => detectAllAnomalies(filtered, 2.5), [filtered]);
+  const gradients = useMemo(
+    () => computeGradients(robots, latestSampleByRobot(filtered), "microplastic"),
+    [robots, filtered],
+  );
+
   const onCsv = () => {
     if (filtered.length === 0) {
       toast.warning("Нет данных за выбранный период", {
@@ -130,6 +157,20 @@ export function AnalyticsView({ robots, samples, thresholds }: Props) {
       });
     } finally {
       setTimeout(() => setLoadingCsv(false), 400);
+    }
+  };
+
+  const onExcel = () => {
+    if (filtered.length === 0) {
+      toast.warning("Нет данных за выбранный период");
+      return;
+    }
+    setLoadingXlsx(true);
+    try {
+      const res = downloadExcel(filtered, robots, thresholds, filters);
+      toast.success("Excel-выгрузка готова", { description: res.filename });
+    } finally {
+      setTimeout(() => setLoadingXlsx(false), 400);
     }
   };
 
@@ -263,57 +304,159 @@ export function AnalyticsView({ robots, samples, thresholds }: Props) {
         </div>
       </Card>
 
-      {/* Microparticle distribution across reservoir zones */}
-      <Card className="bg-card border-border p-5">
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
-          <div className="flex items-center gap-2">
-            <div className="size-8 rounded-lg bg-[oklch(0.55_0.22_300)]/15 text-[oklch(0.78_0.18_300)] flex items-center justify-center">
-              <Sparkles className="size-4" />
+      {/* Microparticle distribution across reservoir zones — tier: analytics.zones */}
+      {can("analytics.zones") && (
+        <Card className="bg-card border-border p-5">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+            <div className="flex items-center gap-2">
+              <div className="size-8 rounded-lg bg-[oklch(0.55_0.22_300)]/15 text-[oklch(0.78_0.18_300)] flex items-center justify-center">
+                <Sparkles className="size-4" />
+              </div>
+              <div>
+                <h3 className="font-semibold leading-tight">Микрочастицы по зонам водоёма</h3>
+                <div className="text-xs text-muted-foreground">
+                  Распределение микропластика, частиц/м³ · концентрация выше у речных притоков
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">Средняя по выборке</span>
+              <span className="text-2xl font-bold tabular-nums">{microAvg}</span>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {microByZone.map((z) => {
+              const cls = MICRO_TONE_CLASS[z.mark.tone];
+              return (
+                <div key={z.id} className={`rounded-lg border p-3 ${cls.border} ${cls.bg}`}>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold">{z.label}</span>
+                    <span
+                      className={`text-[10px] uppercase tracking-wider font-semibold ${cls.text}`}
+                    >
+                      {z.mark.label}
+                    </span>
+                  </div>
+                  <div className="mt-2 flex items-baseline gap-1.5">
+                    <span className={`text-3xl font-bold tabular-nums ${cls.text}`}>{z.avg}</span>
+                    <span className="text-xs text-muted-foreground">частиц/м³ (среднее)</span>
+                  </div>
+                  <div className="mt-2 h-1.5 rounded-full bg-background/60 overflow-hidden">
+                    <div
+                      className={`h-full ${cls.bar} transition-all`}
+                      style={{ width: `${Math.min(100, (z.avg / 2600) * 100)}%` }}
+                    />
+                  </div>
+                  <div className="mt-1.5 flex items-center justify-between text-[10px] text-muted-foreground font-mono">
+                    <span>проб: {z.count}</span>
+                    <span>пик: {z.peak}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </Card>
+      )}
+
+      {/* Anomaly detector — tier: analytics.anomalies */}
+      {can("analytics.anomalies") && (
+        <Card className="bg-card border-border p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="size-8 rounded-lg bg-destructive/15 text-destructive flex items-center justify-center">
+              <Activity className="size-4" />
             </div>
             <div>
-              <h3 className="font-semibold leading-tight">Микрочастицы по зонам водоёма</h3>
+              <h3 className="font-semibold leading-tight">Выявленные аномалии</h3>
               <div className="text-xs text-muted-foreground">
-                Распределение микропластика, частиц/м³ · концентрация выше у речных притоков
+                Точки с |z-score| ≥ 2.5 по 6 метрикам — кандидаты на ручную проверку
+              </div>
+            </div>
+            <span className="ml-auto text-3xl font-bold tabular-nums">{anomalies.length}</span>
+          </div>
+          {anomalies.length === 0 ? (
+            <div className="text-xs text-muted-foreground italic">
+              Аномалий не обнаружено за выбранный период.
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+              {anomalies.slice(0, 9).map((a) => (
+                <div
+                  key={`${a.sampleId}-${a.metric}`}
+                  className="rounded-md border border-destructive/20 bg-destructive/5 px-3 py-2"
+                >
+                  <div className="flex items-center justify-between text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
+                    <span>{METRIC_LABEL[a.metric] ?? a.metric}</span>
+                    <span className="text-destructive font-mono">
+                      {a.z > 0 ? "+" : ""}
+                      {a.z}σ
+                    </span>
+                  </div>
+                  <div className="mt-1 font-mono text-xs tabular-nums">
+                    {a.value} <span className="text-muted-foreground">(μ {a.mean})</span>
+                  </div>
+                  <div className="text-[10px] text-muted-foreground font-mono">
+                    {a.sampleId.toUpperCase()}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </Card>
+      )}
+
+      {/* Inter-station gradients — tier: analytics.gradients (Gov) */}
+      {can("analytics.gradients") && (
+        <Card className="bg-card border-border p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="size-8 rounded-lg bg-secondary/15 text-secondary flex items-center justify-center">
+              <GitBranch className="size-4" />
+            </div>
+            <div>
+              <h3 className="font-semibold leading-tight">
+                Градиенты микропластика между станциями
+              </h3>
+              <div className="text-xs text-muted-foreground">
+                Δчастиц/м³ на километр между парами аппаратов — индикатор распространения
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground">Средняя по выборке</span>
-            <span className="text-2xl font-bold tabular-nums">{microAvg}</span>
-          </div>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          {microByZone.map((z) => {
-            const cls = MICRO_TONE_CLASS[z.mark.tone];
-            return (
-              <div key={z.id} className={`rounded-lg border p-3 ${cls.border} ${cls.bg}`}>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold">{z.label}</span>
-                  <span
-                    className={`text-[10px] uppercase tracking-wider font-semibold ${cls.text}`}
-                  >
-                    {z.mark.label}
-                  </span>
+          {gradients.length === 0 ? (
+            <div className="text-xs text-muted-foreground italic">
+              Нужны свежие пробы минимум по двум станциям.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              {gradients.map((g) => (
+                <div
+                  key={`${g.fromId}-${g.toId}`}
+                  className="rounded-md border border-border bg-panel/40 px-3 py-2.5"
+                >
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-mono">
+                      {g.fromName} → {g.toName}
+                    </span>
+                    <span
+                      className={`font-mono font-semibold ${g.delta > 0 ? "text-destructive" : "text-success"}`}
+                    >
+                      {g.delta > 0 ? "+" : ""}
+                      {g.delta}
+                    </span>
+                  </div>
+                  <div className="mt-1 flex items-center justify-between text-[10px] text-muted-foreground font-mono">
+                    <span>
+                      {g.distanceKm} км · курс {g.direction}°
+                    </span>
+                    <span>
+                      {g.rate > 0 ? "+" : ""}
+                      {g.rate} /км
+                    </span>
+                  </div>
                 </div>
-                <div className="mt-2 flex items-baseline gap-1.5">
-                  <span className={`text-3xl font-bold tabular-nums ${cls.text}`}>{z.avg}</span>
-                  <span className="text-xs text-muted-foreground">частиц/м³ (среднее)</span>
-                </div>
-                <div className="mt-2 h-1.5 rounded-full bg-background/60 overflow-hidden">
-                  <div
-                    className={`h-full ${cls.bar} transition-all`}
-                    style={{ width: `${Math.min(100, (z.avg / 2600) * 100)}%` }}
-                  />
-                </div>
-                <div className="mt-1.5 flex items-center justify-between text-[10px] text-muted-foreground font-mono">
-                  <span>проб: {z.count}</span>
-                  <span>пик: {z.peak}</span>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </Card>
+              ))}
+            </div>
+          )}
+        </Card>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <ChartCard
@@ -450,31 +593,51 @@ export function AnalyticsView({ robots, samples, thresholds }: Props) {
               <div>Excel / Sheets · UTF-8</div>
             </div>
           </div>
-          <div className="mt-auto pt-4 grid grid-cols-2 gap-3">
-            <Button
-              onClick={onPdf}
-              disabled={loadingPdf || filtered.length === 0}
-              className="h-14 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
-            >
-              {loadingPdf ? (
-                <Loader2 className="size-5 animate-spin" />
-              ) : (
-                <FileText className="size-5" />
+          <div className="mt-auto pt-4 space-y-2">
+            <div className="grid grid-cols-2 gap-3">
+              {can("reporting.pdf") && (
+                <Button
+                  onClick={onPdf}
+                  disabled={loadingPdf || filtered.length === 0}
+                  className="h-14 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
+                >
+                  {loadingPdf ? (
+                    <Loader2 className="size-5 animate-spin" />
+                  ) : (
+                    <FileText className="size-5" />
+                  )}
+                  Скачать PDF
+                </Button>
               )}
-              Скачать PDF
-            </Button>
-            <Button
-              onClick={onCsv}
-              disabled={loadingCsv || filtered.length === 0}
-              className="h-14 bg-success/90 hover:bg-success text-success-foreground font-semibold"
-            >
-              {loadingCsv ? (
-                <Loader2 className="size-5 animate-spin" />
-              ) : (
-                <Sheet className="size-5" />
+              {can("reporting.csv") && (
+                <Button
+                  onClick={onCsv}
+                  disabled={loadingCsv || filtered.length === 0}
+                  className={`h-14 bg-success/90 hover:bg-success text-success-foreground font-semibold ${can("reporting.pdf") ? "" : "col-span-2"}`}
+                >
+                  {loadingCsv ? (
+                    <Loader2 className="size-5 animate-spin" />
+                  ) : (
+                    <Sheet className="size-5" />
+                  )}
+                  Скачать CSV
+                </Button>
               )}
-              Скачать CSV
-            </Button>
+            </div>
+            {can("reporting.excel") && (
+              <Button
+                onClick={onExcel}
+                disabled={loadingXlsx || filtered.length === 0}
+                className="w-full h-12 bg-secondary hover:bg-secondary/90 text-secondary-foreground font-semibold"
+              >
+                {loadingXlsx ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <FileSpreadsheet className="size-4" />
+                )}
+                Скачать Excel (Gov)
+              </Button>
+            )}
           </div>
         </Card>
       </div>
