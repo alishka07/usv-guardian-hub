@@ -108,8 +108,16 @@ export function MapView({
     setPan(clampPan({ x: npx, y: npy }, next));
   };
 
+  // pan/edit handlers must not steal events from floating controls (toolbar buttons,
+  // legend, robot markers etc.) — setPointerCapture on the wrapper would otherwise
+  // swallow the click on a child <button>.
+  const isInteractive = (target: EventTarget | null) =>
+    target instanceof Element &&
+    !!target.closest("button, a, input, select, textarea, [role=button], [data-no-pan]");
+
   const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (editMode) return;
+    if (isInteractive(e.target)) return;
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
     dragRef.current = { x: e.clientX, y: e.clientY, px: pan.x, py: pan.y };
     setDragging(true);
@@ -133,6 +141,7 @@ export function MapView({
 
   const onLayerClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!editMode || !onMapClick || !wrapRef.current) return;
+    if (isInteractive(e.target)) return;
     const rect = wrapRef.current.getBoundingClientRect();
     const cx = ((e.clientX - rect.left) / rect.width) * 100;
     const cy = ((e.clientY - rect.top) / rect.height) * 100;
@@ -1053,8 +1062,10 @@ function ToolBtn({
           size="icon"
           variant="ghost"
           onClick={onClick}
-          className={`size-8 rounded-lg hover:bg-cyan-accent/12 hover:text-cyan-accent ${
-            active ? "bg-cyan-accent/15 text-cyan-accent" : "text-foreground/80"
+          className={`size-8 rounded-lg transition-all duration-150 hover:bg-cyan-accent/12 hover:text-cyan-accent active:scale-90 ${
+            active
+              ? "bg-cyan-accent/20 text-cyan-accent ring-1 ring-cyan-accent/40"
+              : "text-foreground/80"
           }`}
         >
           {children}
