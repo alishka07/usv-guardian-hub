@@ -10,9 +10,9 @@ type Source = { x: number; y: number; strength: number; reach: number; label: st
 
 // Coordinates are in map-percentage space (matches MapView / mock-data).
 export const MICRO_SOURCES: Source[] = [
-  { x: 88, y: 30, strength: 2400, reach: 50, label: "Устье р. Или" },
-  { x: 65, y: 56, strength: 1300, reach: 32, label: "Приток р. Чилик" },
-  { x: 16, y: 66, strength: 900, reach: 26, label: "Сток г. Капшагай" },
+  { x: 90, y: 34, strength: 2400, reach: 50, label: "Устье р. Есиль" },
+  { x: 62, y: 60, strength: 1300, reach: 32, label: "Промзона Астаны" },
+  { x: 16, y: 64, strength: 900, reach: 26, label: "Сток ТЭЦ-2" },
 ];
 
 const BASELINE = 180; // background concentration in open water, particles/m³
