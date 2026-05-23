@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { CheckCircle2, Loader2, Activity, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
-import type { Robot } from "./types";
+import type { Robot } from "@/domain/types";
 
 const CHECKS = [
   "GPS-приёмник",

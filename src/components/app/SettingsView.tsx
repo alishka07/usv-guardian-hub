@@ -5,9 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Droplets, Wind, Eye, Thermometer, Biohazard, RotateCcw, Save, Sliders, CheckCircle2, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
-import type { Sample, Thresholds } from "./types";
-import { DEFAULT_THRESHOLDS } from "./types";
-import { assessQuality } from "./thresholds";
+import type { Sample, Thresholds } from "@/domain/types";
+import { DEFAULT_THRESHOLDS } from "@/domain/types";
+import { assessQuality } from "@/domain/analysis/quality";
 
 type Props = {
   thresholds: Thresholds;

@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
-import type { Robot } from "./types";
-import { BASE_POSITION } from "./mock-data";
+import type { Robot } from "@/domain/types";
+import { BASE_POSITION } from "@/domain/acquisition/seed";
 
 const TICK_MS = 1500;
 const TRAIL_MAX = 28;

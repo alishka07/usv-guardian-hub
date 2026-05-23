@@ -23,7 +23,7 @@ import {
   ScrollText,
   Filter,
 } from "lucide-react";
-import type { Robot, EventLogEntry } from "./types";
+import type { Robot, EventLogEntry } from "@/domain/types";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 import type { DateRange } from "react-day-picker";

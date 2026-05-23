@@ -13,8 +13,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Plus, Cpu } from "lucide-react";
 import { toast } from "sonner";
-import type { Robot } from "./types";
-import { ROBOT_COLORS } from "./mock-data";
+import type { Robot } from "@/domain/types";
+import { ROBOT_COLORS } from "@/domain/acquisition/seed";
 
 const COLOR_CYCLE = Object.values(ROBOT_COLORS);
 

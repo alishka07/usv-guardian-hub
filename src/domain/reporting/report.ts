@@ -1,7 +1,7 @@
-import type { Robot, Sample, Thresholds } from "./types";
-import { assessQuality, pollutionLabel } from "./thresholds";
-import { toGps } from "@/lib/geo";
-import { microplasticLabel } from "./microplastic";
+import type { Robot, Sample, Thresholds } from "@/domain/types";
+import { assessQuality, pollutionLabel } from "@/domain/analysis/quality";
+import { toGps } from "@/domain/intelligence/geo";
+import { microplasticLabel } from "@/domain/analysis/microplastic";
 
 export type ReportRange = { from: string; to: string };
 export type ReportFilters = { range: ReportRange; robotId: string };

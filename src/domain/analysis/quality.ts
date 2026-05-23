@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { DEFAULT_THRESHOLDS, type Thresholds, type Sample } from "./types";
+import { DEFAULT_THRESHOLDS, type Thresholds, type Sample } from "@/domain/types";
 
 const STORAGE_KEY = "usv.thresholds.v1";
 

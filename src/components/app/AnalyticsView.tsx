@@ -33,9 +33,9 @@ import {
   Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
-import type { Robot, Sample, Thresholds } from "./types";
-import { filterSamples, summarize, downloadCSV, downloadPDF } from "./report";
-import { ZONES, zoneOf, microplasticLabel, MICRO_TONE_CLASS } from "./microplastic";
+import type { Robot, Sample, Thresholds } from "@/domain/types";
+import { filterSamples, summarize, downloadCSV, downloadPDF } from "@/domain/reporting/report";
+import { ZONES, zoneOf, microplasticLabel, MICRO_TONE_CLASS } from "@/domain/analysis/microplastic";
 
 type Props = {
   robots: Robot[];

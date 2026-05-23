@@ -14,11 +14,11 @@ import {
   ShieldX,
   CircleCheck,
 } from "lucide-react";
-import type { Sample, Thresholds } from "./types";
-import { DEFAULT_THRESHOLDS } from "./types";
-import { assessQuality, pollutionLabel, type QualityTone } from "./thresholds";
-import { formatGps } from "@/lib/geo";
-import { microplasticLabel, MICRO_TONE_CLASS } from "./microplastic";
+import type { Sample, Thresholds } from "@/domain/types";
+import { DEFAULT_THRESHOLDS } from "@/domain/types";
+import { assessQuality, pollutionLabel, type QualityTone } from "@/domain/analysis/quality";
+import { formatGps } from "@/domain/intelligence/geo";
+import { microplasticLabel, MICRO_TONE_CLASS } from "@/domain/analysis/microplastic";
 import { CameraFeed } from "./CameraFeed";
 
 const ICON_FOR_SCORE = (score: number) => {

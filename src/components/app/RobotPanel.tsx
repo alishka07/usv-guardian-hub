@@ -42,8 +42,8 @@ import {
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
 import { ResponsiveContainer, AreaChart, Area } from "recharts";
-import type { Robot, Sample, EventType, EventLogEntry } from "./types";
-import { toGps, formatGps } from "@/lib/geo";
+import type { Robot, Sample, EventType, EventLogEntry } from "@/domain/types";
+import { toGps, formatGps } from "@/domain/intelligence/geo";
 import { CameraFeed } from "./CameraFeed";
 import { DiagnosticsDialog } from "./DiagnosticsDialog";
 

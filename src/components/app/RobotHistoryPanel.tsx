@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { X, History, Droplets, ScrollText, Bot, ChevronRight } from "lucide-react";
-import type { Robot, Sample, EventLogEntry, Thresholds } from "./types";
+import type { Robot, Sample, EventLogEntry, Thresholds } from "@/domain/types";
 
 const SEV_DOT: Record<EventLogEntry["severity"], string> = {
   success: "bg-success",

@@ -18,9 +18,9 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import type { Robot, Sample, Thresholds } from "./types";
-import { MAP_LANDMARKS, RESERVOIR } from "./mock-data";
-import { MICRO_SOURCES } from "./microplastic";
+import type { Robot, Sample, Thresholds } from "@/domain/types";
+import { MAP_LANDMARKS, RESERVOIR } from "@/domain/acquisition/seed";
+import { MICRO_SOURCES } from "@/domain/analysis/microplastic";
 
 // Distance label for the scale bar — picks a sensible precision.
 function fmtKm(v: number): string {

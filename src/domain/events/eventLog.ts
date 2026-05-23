@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import type { Robot, EventLogEntry, EventType, EventSeverity } from "./types";
+import type { Robot, EventLogEntry, EventType, EventSeverity } from "@/domain/types";
 
 const SEV: Record<EventType, EventSeverity> = {
   connected: "success",

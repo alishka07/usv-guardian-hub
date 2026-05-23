@@ -11,12 +11,12 @@ import { SampleDialog } from "@/components/app/SampleDialog";
 import { DevicesView } from "@/components/app/DevicesView";
 import { AnalyticsView } from "@/components/app/AnalyticsView";
 import { SettingsView } from "@/components/app/SettingsView";
-import { initialRobots, initialSamples, RESERVOIR, clampToLake } from "@/components/app/mock-data";
-import { useRealtimeSimulation } from "@/components/app/useRealtimeSimulation";
-import { useEventLog } from "@/components/app/useEventLog";
-import { useThresholds } from "@/components/app/thresholds";
-import { microplasticAt } from "@/components/app/microplastic";
-import type { Robot, Sample } from "@/components/app/types";
+import { initialRobots, initialSamples, RESERVOIR, clampToLake } from "@/domain/acquisition/seed";
+import { useRealtimeSimulation } from "@/domain/acquisition/simulationSource";
+import { useEventLog } from "@/domain/events/eventLog";
+import { useThresholds } from "@/domain/analysis/quality";
+import { microplasticAt } from "@/domain/analysis/microplastic";
+import type { Robot, Sample } from "@/domain/types";
 
 // Builds a fresh measurement at a robot's current position — used both by the
 // background collection loop and by the manual "взять пробу" command.

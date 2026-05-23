@@ -1,5 +1,5 @@
-import type { Robot, Sample } from "./types";
-import { microplasticAt } from "./microplastic";
+import type { Robot, Sample } from "@/domain/types";
+import { microplasticAt } from "@/domain/analysis/microplastic";
 
 // Coordinates roughly trace the Kapshagay reservoir shape in %.
 // Waypoints are picked inside the water polygon.
