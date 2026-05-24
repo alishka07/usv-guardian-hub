@@ -552,7 +552,14 @@ export function MapView({
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    if (c.type === "single") onSelectSample(c.sample);
+                    if (c.type === "single") {
+                      onSelectSample(c.sample);
+                    } else {
+                      // cluster → zoom in and centre so it splits into clickable dots
+                      const z = 3.2;
+                      setZoom(z);
+                      setPan(clampPan({ x: (50 - c.x) * z, y: (50 - c.y) * z }, z));
+                    }
                   }}
                   onPointerDown={(e) => e.stopPropagation()}
                   style={{ left: `${c.x}%`, top: `${c.y}%` }}
@@ -609,6 +616,7 @@ export function MapView({
                 {c.type === "cluster" ? (
                   <div className="px-3 py-2 text-xs">
                     <div className="font-semibold text-foreground">Кластер: {c.count} проб</div>
+                    <div className="text-cyan-accent mt-0.5">клик — приблизить и раскрыть</div>
                     <div className="text-muted-foreground mt-0.5">
                       Приблизьте карту для детального просмотра
                     </div>
