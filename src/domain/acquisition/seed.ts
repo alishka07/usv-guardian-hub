@@ -19,18 +19,18 @@ export const initialRobots: Robot[] = [
     status: "online",
     battery: 87,
     signal: 92,
-    position: { x: 32, y: 56 },
+    position: { x: 48, y: 28 },
     heading: 70,
     speed: 2.4,
     color: ROBOT_COLORS.cyan,
     samplesPerTrip: 12,
     waypoints: [
-      { x: 32, y: 56 },
-      { x: 42, y: 52 },
-      { x: 52, y: 49 },
-      { x: 60, y: 46 },
-      { x: 50, y: 52 },
-      { x: 38, y: 58 },
+      { x: 48, y: 28 },
+      { x: 40, y: 32 },
+      { x: 30, y: 35 },
+      { x: 22, y: 42 },
+      { x: 35, y: 40 },
+      { x: 50, y: 35 },
     ],
     waypointIdx: 1,
     trail: [],
@@ -44,17 +44,17 @@ export const initialRobots: Robot[] = [
     status: "offline",
     battery: 14,
     signal: 0,
-    position: { x: 70, y: 42 },
+    position: { x: 55, y: 48 },
     heading: 180,
     speed: 0,
     color: ROBOT_COLORS.lime,
     lastSeen: "2 часа назад",
     samplesPerTrip: 8,
     waypoints: [
-      { x: 70, y: 43 },
-      { x: 78, y: 40 },
-      { x: 84, y: 37 },
-      { x: 76, y: 44 },
+      { x: 55, y: 48 },
+      { x: 58, y: 55 },
+      { x: 52, y: 60 },
+      { x: 48, y: 52 },
     ],
     waypointIdx: 0,
     trail: [],
@@ -68,17 +68,17 @@ export const initialRobots: Robot[] = [
     status: "online",
     battery: 64,
     signal: 78,
-    position: { x: 55, y: 48 },
+    position: { x: 35, y: 58 },
     heading: 250,
     speed: 1.9,
     color: ROBOT_COLORS.amber,
     samplesPerTrip: 15,
     waypoints: [
-      { x: 55, y: 48 },
-      { x: 48, y: 52 },
-      { x: 40, y: 55 },
       { x: 35, y: 58 },
-      { x: 45, y: 53 },
+      { x: 28, y: 65 },
+      { x: 20, y: 60 },
+      { x: 25, y: 55 },
+      { x: 38, y: 62 },
     ],
     waypointIdx: 1,
     trail: [],
@@ -93,15 +93,14 @@ const rand = (i: number) => Math.abs(seed(i) - Math.floor(seed(i)));
 // RESERVOIR_PATH in MapView. h is kept slightly under the true half-height so a
 // margin is left to the shore. Single source of truth for "is this point in water".
 const LAKE_PROFILE: { x: number; yc: number; h: number }[] = [
-  { x: 8, yc: 63, h: 1.6 },
-  { x: 15, yc: 59.5, h: 4.2 },
-  { x: 30, yc: 54, h: 5.4 },
-  { x: 43, yc: 50.7, h: 6.0 },
-  { x: 52, yc: 47.5, h: 6.2 },
-  { x: 66, yc: 43, h: 5.7 },
-  { x: 82, yc: 39.3, h: 4.3 },
-  { x: 90, yc: 36.8, h: 2.5 },
-  { x: 94, yc: 36, h: 1.1 },
+  { x: 6, yc: 55, h: 3 },
+  { x: 14, yc: 50, h: 16 },
+  { x: 22, yc: 48, h: 22 },
+  { x: 35, yc: 48, h: 26 },
+  { x: 48, yc: 48, h: 27 },
+  { x: 56, yc: 50, h: 22 },
+  { x: 62, yc: 55, h: 12 },
+  { x: 66, yc: 60, h: 4 },
 ];
 
 // Water band (centerline + half-height) at a given x.
@@ -122,7 +121,7 @@ export function lakeBandAt(x: number): { yc: number; h: number } {
 
 // Pulls a point safely inside the water band, keeping clear of the shoreline.
 export function clampToLake(pos: { x: number; y: number }): { x: number; y: number } {
-  const x = Math.max(9, Math.min(93, pos.x));
+  const x = Math.max(10, Math.min(62, pos.x));
   const { yc, h } = lakeBandAt(x);
   const m = h * 0.85;
   const y = Math.max(yc - m, Math.min(yc + m, pos.y));
@@ -131,7 +130,7 @@ export function clampToLake(pos: { x: number; y: number }): { x: number; y: numb
 
 // A sample position on the lake: x from the parameter t, y inside the water band.
 function pointOnLake(t: number, lateral: number) {
-  const cx = 14 + t * 70; // 14 → 84
+  const cx = 12 + t * 50; // 12 → 62 — main Talykol basin
   const { yc, h } = lakeBandAt(cx);
   const y = yc + lateral * h * 0.8; // lateral ∈ [-1,1] → safely within the band
   return { x: +cx.toFixed(2), y: +y.toFixed(2) };
@@ -174,7 +173,7 @@ export const RESERVOIR = {
 };
 
 // Home dock for return-to-launch / recharge logic — matches the "base" landmark.
-export const BASE_POSITION = { x: 18, y: 58 };
+export const BASE_POSITION = { x: 15, y: 60 };
 
 export const MAP_LANDMARKS = [
   { id: "dam", label: "Плотина Астана", x: 12, y: 60, kind: "infra" as const },
