@@ -167,19 +167,23 @@ export const trendData = Array.from({ length: 14 }, (_, i) => ({
 }));
 
 export const RESERVOIR = {
-  name: "Капшагайское водохранилище",
-  river: "р. Или",
-  lat: "43.8800° N",
-  lon: "77.0700° E",
+  name: "Астанинское водохранилище",
+  river: "р. Есиль",
+  lat: "51.1800° N",
+  lon: "71.4200° E",
 };
 
 // Home dock for return-to-launch / recharge logic — matches the "base" landmark.
-export const BASE_POSITION = { x: 24, y: 60 };
+export const BASE_POSITION = { x: 18, y: 58 };
 
 export const MAP_LANDMARKS = [
-  { id: "dam", label: "Плотина ГЭС", x: 18, y: 62, kind: "infra" as const },
-  { id: "base", label: "База USV", x: 24, y: 60, kind: "base" as const },
-  { id: "bay", label: "Залив Тас-Откель", x: 48, y: 38, kind: "place" as const },
-  { id: "mouth", label: "Устье р. Или", x: 88, y: 30, kind: "place" as const },
-  { id: "kapsh", label: "г. Капшагай", x: 14, y: 70, kind: "city" as const },
+  { id: "dam", label: "Плотина Астана", x: 12, y: 60, kind: "infra" as const },
+  { id: "base", label: "База USV", x: 18, y: 58, kind: "base" as const },
+  { id: "baiterek", label: "Байтерек · Левый берег", x: 38, y: 52, kind: "city" as const },
+  { id: "expo", label: "EXPO / Нур-Алем", x: 46, y: 46, kind: "place" as const },
+  { id: "khanshatyr", label: "Хан-Шатыр", x: 42, y: 42, kind: "place" as const },
+  { id: "akorda", label: "Ак-Орда", x: 50, y: 48, kind: "infra" as const },
+  { id: "bay", label: "Залив Талдыколь", x: 62, y: 60, kind: "place" as const },
+  { id: "mouth", label: "Устье р. Есиль", x: 90, y: 34, kind: "place" as const },
+  { id: "astana", label: "г. Астана", x: 44, y: 70, kind: "city" as const },
 ];
