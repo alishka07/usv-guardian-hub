@@ -10,9 +10,9 @@ type Source = { x: number; y: number; strength: number; reach: number; label: st
 
 // Coordinates are in map-percentage space (matches MapView / mock-data).
 export const MICRO_SOURCES: Source[] = [
-  { x: 90, y: 34, strength: 2400, reach: 50, label: "Устье р. Есиль" },
-  { x: 62, y: 60, strength: 1300, reach: 32, label: "Промзона Астаны" },
-  { x: 16, y: 64, strength: 900, reach: 26, label: "Сток ТЭЦ-2" },
+  { x: 88, y: 30, strength: 2400, reach: 50, label: "Устье р. Или" },
+  { x: 65, y: 56, strength: 1300, reach: 32, label: "Приток р. Чилик" },
+  { x: 16, y: 66, strength: 900, reach: 26, label: "Сток г. Капшагай" },
 ];
 
 const BASELINE = 180; // background concentration in open water, particles/m³
@@ -31,8 +31,8 @@ export type ZoneId = "west" | "center" | "east";
 
 export const ZONES: { id: ZoneId; label: string; short: string; from: number; to: number }[] = [
   { id: "west", label: "Западный плёс · плотина", short: "Запад", from: 0, to: 32 },
-  { id: "center", label: "Центральный плёс · Астана", short: "Центр", from: 32, to: 62 },
-  { id: "east", label: "Восточный плёс · устье Есиль", short: "Восток", from: 62, to: 100 },
+  { id: "center", label: "Центральный плёс", short: "Центр", from: 32, to: 62 },
+  { id: "east", label: "Восточный плёс · устье Или", short: "Восток", from: 62, to: 100 },
 ];
 
 export function zoneOf(pos: { x: number }): ZoneId {
